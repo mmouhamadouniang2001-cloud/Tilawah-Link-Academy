@@ -131,6 +131,10 @@ window.confirmPayment=function(){
     for(var i=0;i<users.length;i++){if(users[i].id===user.id){users[i].paymentStatus='awaiting';}}
     dbSet('tla_users',users);dbSet('tla_current_user',user);
     showWaitingScreen();
+    // Envoyer WhatsApp à l'admin
+    var isRenewal=user.paymentDate?'renouvellement':'première inscription';
+    var waMsg=encodeURIComponent('Salam Cher Administrateur,\n\nJe suis '+user.name+' ('+user.phone+'), enseignant sur Tilawah Link Academy.\n\nJe viens d\'effectuer mon paiement de 1 000 FCFA via Wave pour mon '+isRenewal+'.\n\nMerci de bien vouloir vérifier et valider mon compte.\n\nBarakAllahu fik.');
+    window.open('https://wa.me/221774599835?text='+waMsg,'_blank');
 }
 
 window.updateStats=function(){
