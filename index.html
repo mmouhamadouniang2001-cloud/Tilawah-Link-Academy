@@ -107,14 +107,6 @@
                 </div>
             </div>
         </nav>
-        <!-- Barre stats admin -->
-        <div id="admin-stats-bar" class="admin-stats-bar hidden">
-            <div class="container" style="display:flex;justify-content:center;gap:30px;padding:8px 0;">
-                <span><i class="fa-solid fa-chalkboard-user"></i> Enseignants : <strong id="stat-teachers">0</strong></span>
-                <span><i class="fa-solid fa-users"></i> Apprenants : <strong id="stat-students">0</strong></span>
-                <span><i class="fa-solid fa-user-group"></i> Total : <strong id="stat-total">0</strong></span>
-            </div>
-        </div>
     </header>
 
     <div id="page-main-content">
@@ -122,14 +114,14 @@
         <section id="accueil" class="hero">
             <div class="hero-overlay"></div>
             <div class="hero-content">
-                <p class="hero-welcome animate-in">Bienvenue sur <strong>Tilawah Link Academy</strong>, votre espace dédié à l'apprentissage et à l'enseignement islamique.</p>
+                <p class="hero-welcome animate-in" id="hero-welcome-msg">Bienvenue sur <strong>Tilawah Link Academy</strong>, votre espace dédié à l'apprentissage et à l'enseignement islamique.</p>
                 <p class="hero-arabic animate-in delay-1">وَقُل رَّبِّ زِدْنِي عِلْمًا</p>
                 <p class="hero-hadith animate-in delay-1">« Et dis : "Ô mon Seigneur, augmente-moi en savoir." »</p>
                 <h1 class="animate-in delay-2">Tilawah Link Academy</h1>
                 <p class="slogan animate-in delay-2">Apprendre et enseigner le Coran, les Sciences Islamiques et la Langue Arabe, partout et pour tous.</p>
                 <div class="hero-buttons animate-in delay-3">
-                    <a href="#enseignants" class="btn btn-primary btn-glow">Trouver un enseignant</a>
-                    <a href="#services" class="btn btn-accent">Nos services</a>
+                    <a href="javascript:void(0)" onclick="showTeachersPage()" class="btn btn-primary btn-glow">Trouver un enseignant</a>
+                    <a href="javascript:void(0)" onclick="goToSection('services')" class="btn btn-accent">Nos services</a>
                 </div>
             </div>
             <div class="hero-scroll"><i class="fa-solid fa-chevron-down"></i></div>
@@ -337,6 +329,12 @@
         </div>
     </header>
     <div class="container section-padding">
+        <!-- Stats -->
+        <div class="admin-stats-cards mb-4">
+            <div class="stat-card"><i class="fa-solid fa-chalkboard-user"></i><div><span class="stat-num" id="stat-teachers">0</span><span class="stat-label">Enseignants</span></div></div>
+            <div class="stat-card"><i class="fa-solid fa-users"></i><div><span class="stat-num" id="stat-students">0</span><span class="stat-label">Apprenants</span></div></div>
+            <div class="stat-card"><i class="fa-solid fa-user-group"></i><div><span class="stat-num" id="stat-total">0</span><span class="stat-label">Total</span></div></div>
+        </div>
         <h2 class="section-title">Gestion des Utilisateurs</h2>
         <div class="admin-table-container mb-4">
             <table class="admin-table"><thead><tr><th>Nom</th><th>Rôle</th><th>Téléphone</th><th>Ville</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="admin-table-body"></tbody></table>

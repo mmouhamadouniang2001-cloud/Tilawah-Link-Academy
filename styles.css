@@ -231,6 +231,11 @@ header{background:rgba(255,255,255,.95);backdrop-filter:blur(14px);-webkit-backd
 .status-pending{background:#fff8e1;color:#856404;}
 .status-blocked{background:#fce4e4;color:#a83232;}
 .admin-gallery-box{background:white;padding:24px;border-radius:var(--radius);box-shadow:var(--shadow);}
+.admin-stats-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.stat-card{background:var(--white);padding:28px 24px;border-radius:var(--radius);box-shadow:var(--shadow);display:flex;align-items:center;gap:18px;border-left:4px solid var(--turquoise);}
+.stat-card i{font-size:2.2rem;color:var(--turquoise);opacity:.8;}
+.stat-num{display:block;font-size:2.4rem;font-weight:800;color:var(--primary);line-height:1;}
+.stat-label{display:block;font-size:.85rem;color:var(--text-light);margin-top:2px;}
 
 /* ========== FOOTER ========== */
 footer{background:linear-gradient(160deg,#0a1510 0%,var(--primary) 100%);color:var(--white);padding:65px 0 24px;}

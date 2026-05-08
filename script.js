@@ -62,15 +62,15 @@ window.refreshInterface=function(){
     else{
         document.getElementById('view-platform').classList.remove('hidden');
         showMainPage();
+        // Welcome personnalisé
+        var wm=document.getElementById('hero-welcome-msg');
+        if(wm) wm.innerHTML='Bienvenue <strong>'+user.name+'</strong> sur <strong>Tilawah Link Academy</strong>, votre espace dédié à l\'apprentissage et à l\'enseignement islamique.';
         // Admin button visible ONLY for admin
         var adminBtn=document.getElementById('admin-panel-btn');
-        var statsBar=document.getElementById('admin-stats-bar');
         if(user.role==='admin'){
             if(adminBtn)adminBtn.classList.remove('hidden');
-            if(statsBar){statsBar.classList.remove('hidden');updateStats();}
         } else {
             if(adminBtn)adminBtn.classList.add('hidden');
-            if(statsBar)statsBar.classList.add('hidden');
         }
         var espBtn=document.getElementById('nav-espace-btn');
         var profBtn=document.getElementById('nav-profile-btn');
@@ -94,10 +94,11 @@ window.updateStats=function(){
 window.goToPlatform=function(){
     document.getElementById('view-admin').classList.add('hidden');
     document.getElementById('view-platform').classList.remove('hidden');
-    // Admin garde son bouton et ses stats
     var adminBtn=document.getElementById('admin-panel-btn');if(adminBtn)adminBtn.classList.remove('hidden');
-    var statsBar=document.getElementById('admin-stats-bar');if(statsBar){statsBar.classList.remove('hidden');updateStats();}
     var user=dbGet('tla_current_user',null);
+    // Welcome personnalisé
+    var wm=document.getElementById('hero-welcome-msg');
+    if(wm&&user) wm.innerHTML='Bienvenue <strong>'+user.name+'</strong> sur <strong>Tilawah Link Academy</strong>, votre espace dédié à l\'apprentissage et à l\'enseignement islamique.';
     var espBtn=document.getElementById('nav-espace-btn');var profBtn=document.getElementById('nav-profile-btn');
     if(espBtn)espBtn.classList.add('hidden');if(profBtn)profBtn.classList.remove('hidden');
     showMainPage();
@@ -406,6 +407,8 @@ window.deleteMedia=function(mid){
 // --- ADMIN ---
 window.loadAdminData=function(){
     var users=dbGet('tla_users',[]),allMedia=dbGet('tla_media',[]);
+    // Update stats
+    updateStats();
     var tb=document.getElementById('admin-table-body');if(!tb)return;tb.innerHTML='';
     for(var i=0;i<users.length;i++){
         var u=users[i];if(u.role==='admin')continue;
