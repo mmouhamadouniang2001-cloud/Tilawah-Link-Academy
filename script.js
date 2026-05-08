@@ -62,9 +62,16 @@ window.refreshInterface=function(){
     else{
         document.getElementById('view-platform').classList.remove('hidden');
         showMainPage();
-        // Show correct nav buttons
+        // Admin button visible ONLY for admin
         var adminBtn=document.getElementById('admin-panel-btn');
-        if(adminBtn)adminBtn.classList.add('hidden');
+        var statsBar=document.getElementById('admin-stats-bar');
+        if(user.role==='admin'){
+            if(adminBtn)adminBtn.classList.remove('hidden');
+            if(statsBar){statsBar.classList.remove('hidden');updateStats();}
+        } else {
+            if(adminBtn)adminBtn.classList.add('hidden');
+            if(statsBar)statsBar.classList.add('hidden');
+        }
         var espBtn=document.getElementById('nav-espace-btn');
         var profBtn=document.getElementById('nav-profile-btn');
         if(user.role==='enseignant'){if(espBtn)espBtn.classList.remove('hidden');if(profBtn)profBtn.classList.add('hidden');}
@@ -72,14 +79,38 @@ window.refreshInterface=function(){
     }
 }
 
+window.updateStats=function(){
+    var users=dbGet('tla_users',[]);
+    var teachers=0,students=0;
+    for(var i=0;i<users.length;i++){
+        if(users[i].role==='enseignant')teachers++;
+        else if(users[i].role==='apprenant')students++;
+    }
+    var st=document.getElementById('stat-teachers');if(st)st.textContent=teachers;
+    var ss=document.getElementById('stat-students');if(ss)ss.textContent=students;
+    var stot=document.getElementById('stat-total');if(stot)stot.textContent=teachers+students;
+}
+
 window.goToPlatform=function(){
     document.getElementById('view-admin').classList.add('hidden');
     document.getElementById('view-platform').classList.remove('hidden');
+    // Admin garde son bouton et ses stats
     var adminBtn=document.getElementById('admin-panel-btn');if(adminBtn)adminBtn.classList.remove('hidden');
+    var statsBar=document.getElementById('admin-stats-bar');if(statsBar){statsBar.classList.remove('hidden');updateStats();}
     var user=dbGet('tla_current_user',null);
     var espBtn=document.getElementById('nav-espace-btn');var profBtn=document.getElementById('nav-profile-btn');
     if(espBtn)espBtn.classList.add('hidden');if(profBtn)profBtn.classList.remove('hidden');
     showMainPage();
+}
+
+// Hamburger menu mobile
+window.toggleMobileMenu=function(){
+    var nc=document.getElementById('nav-center');
+    if(nc)nc.classList.toggle('open');
+}
+window.closeMobileMenu=function(){
+    var nc=document.getElementById('nav-center');
+    if(nc)nc.classList.remove('open');
 }
 window.goToAdmin=function(){
     document.getElementById('view-platform').classList.add('hidden');

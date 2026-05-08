@@ -90,20 +90,31 @@
     <header>
         <nav class="navbar">
             <div class="logo"><i class="fa-solid fa-book-quran"></i><span>Tilawah Link Academy</span></div>
-            <ul class="nav-links" id="platform-nav-links">
-                <li><a href="javascript:void(0)" onclick="goToSection('accueil')">Accueil</a></li>
-                <li><a href="javascript:void(0)" onclick="goToSection('a-propos')">À Propos</a></li>
-                <li><a href="javascript:void(0)" onclick="goToSection('enseignants')">Enseignants</a></li>
-                <li><a href="javascript:void(0)" onclick="goToSection('services')">Services</a></li>
-                <li><a href="javascript:void(0)" onclick="goToSection('contact')">Contact</a></li>
-            </ul>
-            <div class="nav-buttons">
-                <button id="nav-espace-btn" class="btn btn-outline nav-btn hidden" onclick="navToProfile()"><i class="fa-solid fa-chalkboard-user"></i> Espace Enseignant</button>
-                <button id="nav-profile-btn" class="btn btn-outline nav-btn hidden" onclick="navToProfile()"><i class="fa-solid fa-user"></i> Mon Profil</button>
-                <button id="admin-panel-btn" class="btn btn-danger nav-btn hidden" onclick="goToAdmin()"><i class="fa-solid fa-shield"></i> Admin</button>
-                <button class="btn btn-accent nav-btn" onclick="appLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+            <button class="hamburger" id="hamburger-btn" onclick="toggleMobileMenu()"><i class="fa-solid fa-bars"></i></button>
+            <div class="nav-center" id="nav-center">
+                <ul class="nav-links" id="platform-nav-links">
+                    <li><a href="javascript:void(0)" onclick="goToSection('accueil');closeMobileMenu()">Accueil</a></li>
+                    <li><a href="javascript:void(0)" onclick="goToSection('a-propos');closeMobileMenu()">À Propos</a></li>
+                    <li><a href="javascript:void(0)" onclick="goToSection('enseignants');closeMobileMenu()">Enseignants</a></li>
+                    <li><a href="javascript:void(0)" onclick="goToSection('services');closeMobileMenu()">Services</a></li>
+                    <li><a href="javascript:void(0)" onclick="goToSection('contact');closeMobileMenu()">Contact</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    <button id="nav-espace-btn" class="btn btn-outline nav-btn hidden" onclick="navToProfile();closeMobileMenu()"><i class="fa-solid fa-chalkboard-user"></i> <span class="btn-label">Espace Enseignant</span></button>
+                    <button id="nav-profile-btn" class="btn btn-outline nav-btn hidden" onclick="navToProfile();closeMobileMenu()"><i class="fa-solid fa-user"></i> <span class="btn-label">Mon Profil</span></button>
+                    <button id="admin-panel-btn" class="btn btn-danger nav-btn hidden" onclick="goToAdmin();closeMobileMenu()"><i class="fa-solid fa-shield"></i> <span class="btn-label">Admin</span></button>
+                    <button class="btn btn-accent nav-btn" onclick="appLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </div>
             </div>
         </nav>
+        <!-- Barre stats admin -->
+        <div id="admin-stats-bar" class="admin-stats-bar hidden">
+            <div class="container" style="display:flex;justify-content:center;gap:30px;padding:8px 0;">
+                <span><i class="fa-solid fa-chalkboard-user"></i> Enseignants : <strong id="stat-teachers">0</strong></span>
+                <span><i class="fa-solid fa-users"></i> Apprenants : <strong id="stat-students">0</strong></span>
+                <span><i class="fa-solid fa-user-group"></i> Total : <strong id="stat-total">0</strong></span>
+            </div>
+        </div>
     </header>
 
     <div id="page-main-content">
