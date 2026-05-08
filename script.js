@@ -55,28 +55,82 @@ function hideAllViews(){
 window.refreshInterface=function(){
     hideAllViews();
     var user=dbGet('tla_current_user',null);
-    if(!user){document.getElementById('view-auth').classList.remove('hidden');switchAuth('login');}
-    else if(user.needsPasswordChange){document.getElementById('view-auth').classList.remove('hidden');switchAuth('force-pass');}
-    else if(user.role==='admin'){document.getElementById('view-admin').classList.remove('hidden');loadAdminData();}
-    else if(user.role==='enseignant'&&user.status==='pending'){document.getElementById('view-payment').classList.remove('hidden');}
-    else{
-        document.getElementById('view-platform').classList.remove('hidden');
-        showMainPage();
-        // Welcome personnalisé
-        var wm=document.getElementById('hero-welcome-msg');
-        if(wm) wm.innerHTML='Bienvenue <strong>'+user.name+'</strong> sur <strong>Tilawah Link Academy</strong>, votre espace dédié à l\'apprentissage et à l\'enseignement islamique.';
-        // Admin button visible ONLY for admin
-        var adminBtn=document.getElementById('admin-panel-btn');
-        if(user.role==='admin'){
-            if(adminBtn)adminBtn.classList.remove('hidden');
-        } else {
-            if(adminBtn)adminBtn.classList.add('hidden');
+    if(!user){document.getElementById('view-auth').classList.remove('hidden');switchAuth('login');return;}
+    if(user.needsPasswordChange){document.getElementById('view-auth').classList.remove('hidden');switchAuth('force-pass');return;}
+    if(user.role==='admin'){document.getElementById('view-admin').classList.remove('hidden');loadAdminData();return;}
+    // Enseignant: vérifier paiement
+    if(user.role==='enseignant'){
+        // Vérifier expiration mensuelle (30 jours)
+        if(user.paymentDate){
+            var paid=new Date(user.paymentDate);
+            var now=new Date();
+            var diff=Math.floor((now-paid)/(1000*60*60*24));
+            if(diff>=30 && user.paymentStatus!=='awaiting'){
+                // Abonnement expiré — mettre à jour
+                user.paymentStatus='expired';
+                var users=dbGet('tla_users',[]);
+                for(var i=0;i<users.length;i++){if(users[i].id===user.id){users[i].paymentStatus='expired';}}
+                dbSet('tla_users',users);dbSet('tla_current_user',user);
+            }
         }
-        var espBtn=document.getElementById('nav-espace-btn');
-        var profBtn=document.getElementById('nav-profile-btn');
-        if(user.role==='enseignant'){if(espBtn)espBtn.classList.remove('hidden');if(profBtn)profBtn.classList.add('hidden');}
-        else{if(espBtn)espBtn.classList.add('hidden');if(profBtn)profBtn.classList.remove('hidden');}
+        // Statuts de paiement
+        if(user.status==='pending' || user.paymentStatus==='expired'){
+            document.getElementById('view-payment').classList.remove('hidden');
+            showPayScreen(user);
+            return;
+        }
+        if(user.paymentStatus==='awaiting'){
+            document.getElementById('view-payment').classList.remove('hidden');
+            showWaitingScreen();
+            return;
+        }
     }
+    // Apprenant bloqué
+    if(user.status==='blocked'){
+        alert('Votre compte a été bloqué par l\'administrateur.');
+        appLogout();return;
+    }
+    // Accès normal
+    document.getElementById('view-platform').classList.remove('hidden');
+    showMainPage();
+    var wm=document.getElementById('hero-welcome-msg');
+    if(wm) wm.innerHTML='Bienvenue <strong>'+user.name+'</strong> sur <strong>Tilawah Link Academy</strong>, votre espace dédié à l\'apprentissage et à l\'enseignement islamique.';
+    var adminBtn=document.getElementById('admin-panel-btn');
+    if(user.role==='admin'){if(adminBtn)adminBtn.classList.remove('hidden');}
+    else{if(adminBtn)adminBtn.classList.add('hidden');}
+    var espBtn=document.getElementById('nav-espace-btn');
+    var profBtn=document.getElementById('nav-profile-btn');
+    if(user.role==='enseignant'){if(espBtn)espBtn.classList.remove('hidden');if(profBtn)profBtn.classList.add('hidden');}
+    else{if(espBtn)espBtn.classList.add('hidden');if(profBtn)profBtn.classList.remove('hidden');}
+}
+
+function showPayScreen(user){
+    var sp=document.getElementById('pay-screen-pay');
+    var sw=document.getElementById('pay-screen-waiting');
+    if(sp)sp.classList.remove('hidden');if(sw)sw.classList.add('hidden');
+    var title=document.getElementById('pay-title');
+    var msg=document.getElementById('pay-msg');
+    if(user.paymentStatus==='expired'){
+        if(title)title.textContent='Renouvellement de votre abonnement';
+        if(msg)msg.innerHTML='Votre abonnement mensuel a expiré. Pour continuer à accéder à la plateforme, veuillez renouveler votre paiement de <strong>1 000 FCFA</strong> via Wave.';
+    } else {
+        if(title)title.textContent='Activation de votre compte';
+        if(msg)msg.innerHTML='Pour accéder à la plateforme, veuillez effectuer votre paiement mensuel de <strong>1 000 FCFA</strong> via Wave.';
+    }
+}
+function showWaitingScreen(){
+    var sp=document.getElementById('pay-screen-pay');
+    var sw=document.getElementById('pay-screen-waiting');
+    if(sp)sp.classList.add('hidden');if(sw)sw.classList.remove('hidden');
+}
+
+window.confirmPayment=function(){
+    var user=dbGet('tla_current_user',null);if(!user)return;
+    user.paymentStatus='awaiting';
+    var users=dbGet('tla_users',[]);
+    for(var i=0;i<users.length;i++){if(users[i].id===user.id){users[i].paymentStatus='awaiting';}}
+    dbSet('tla_users',users);dbSet('tla_current_user',user);
+    showWaitingScreen();
 }
 
 window.updateStats=function(){
@@ -404,10 +458,8 @@ window.deleteMedia=function(mid){
     });
 }
 
-// --- ADMIN ---
 window.loadAdminData=function(){
     var users=dbGet('tla_users',[]),allMedia=dbGet('tla_media',[]);
-    // Update stats
     updateStats();
     var tb=document.getElementById('admin-table-body');if(!tb)return;tb.innerHTML='';
     for(var i=0;i<users.length;i++){
@@ -416,11 +468,23 @@ window.loadAdminData=function(){
         if(u.status==='active')sb='<span class="status-badge status-active">Actif</span>';
         else if(u.status==='pending')sb='<span class="status-badge status-pending">En attente</span>';
         else sb='<span class="status-badge status-blocked">Bloqué</span>';
+        // Paiement (enseignants seulement)
+        var payInfo='—';
+        if(u.role==='enseignant'){
+            if(u.paymentStatus==='awaiting')payInfo='<span class="status-badge" style="background:#fff3cd;color:#856404;">💰 Paiement signalé</span>';
+            else if(u.paymentStatus==='expired')payInfo='<span class="status-badge status-blocked">⏰ Expiré</span>';
+            else if(u.paymentDate)payInfo='<span class="status-badge status-active">✅ Payé</span>';
+            else payInfo='<span class="status-badge status-pending">Non payé</span>';
+        }
         var btns='';
-        if(u.status!=='active')btns+='<button class="btn btn-success" style="padding:5px 10px;font-size:.8rem;margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'active\')">Valider</button>';
+        // Bouton valider paiement
+        if(u.role==='enseignant' && u.paymentStatus==='awaiting'){
+            btns+='<button class="btn btn-success" style="padding:5px 10px;font-size:.8rem;margin:2px;" onclick="adminValidatePayment(\''+u.id+'\')"><i class="fa-solid fa-check"></i> Valider paiement</button>';
+        }
+        if(u.status!=='active')btns+='<button class="btn btn-success" style="padding:5px 10px;font-size:.8rem;margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'active\')">Activer</button>';
         if(u.status!=='blocked')btns+='<button class="btn btn-danger" style="padding:5px 10px;font-size:.8rem;margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'blocked\')">Bloquer</button>';
         var tr=document.createElement('tr');
-        tr.innerHTML='<td>'+u.name+'</td><td>'+(u.role||'').toUpperCase()+'</td><td>'+u.phone+'</td><td>'+(u.city||'')+'</td><td>'+sb+'</td><td>'+btns+'</td>';
+        tr.innerHTML='<td>'+u.name+'</td><td>'+(u.role||'').toUpperCase()+'</td><td>'+u.phone+'</td><td>'+(u.city||'')+'</td><td>'+sb+'</td><td>'+payInfo+'</td><td>'+btns+'</td>';
         tb.appendChild(tr);
     }
     var gb=document.getElementById('admin-gallery-body');if(!gb)return;gb.innerHTML='';
@@ -436,6 +500,19 @@ window.adminSetStatus=function(uid,ns){
     var users=dbGet('tla_users',[]);
     for(var i=0;i<users.length;i++){if(users[i].id===uid)users[i].status=ns;}
     dbSet('tla_users',users);loadAdminData();
+}
+window.adminValidatePayment=function(uid){
+    var users=dbGet('tla_users',[]);
+    for(var i=0;i<users.length;i++){
+        if(users[i].id===uid){
+            users[i].paymentStatus='paid';
+            users[i].paymentDate=new Date().toISOString();
+            users[i].status='active';
+        }
+    }
+    dbSet('tla_users',users);
+    alert('Paiement validé ! L\'enseignant a maintenant accès pour 30 jours.');
+    loadAdminData();
 }
 
 
