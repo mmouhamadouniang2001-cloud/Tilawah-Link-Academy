@@ -8,7 +8,6 @@ firebase.initializeApp({
   appId:"1:924154130867:web:61d9e3009d619067dc9bc6"
 });
 var db=firebase.firestore();
-var stor=firebase.storage();
 
 // Session locale (qui est connecté sur CE navigateur)
 function getSession(){try{return JSON.parse(localStorage.getItem('tla_session'));}catch(e){return null;}}
@@ -57,18 +56,19 @@ async function fbDeleteMedia(mid){
   await db.collection('media').doc(mid).delete();
 }
 
-// Storage: files
+// Storage via Firestore (pas besoin de Firebase Storage)
 async function fbUploadFile(mid,file){
-  var ref=stor.ref('media/'+mid);
-  await ref.put(file);
-  return await ref.getDownloadURL();
+  return new Promise(function(resolve){
+    var reader=new FileReader();
+    reader.onload=function(e){resolve(e.target.result);};
+    reader.readAsDataURL(file);
+  });
 }
 async function fbGetFileUrl(mid){
-  try{return await stor.ref('media/'+mid).getDownloadURL();}catch(e){return null;}
+  var doc=await db.collection('media').doc(mid).get();
+  if(doc.exists&&doc.data().url)return doc.data().url;return null;
 }
-async function fbDeleteFile(mid){
-  try{await stor.ref('media/'+mid).delete();}catch(e){}
-}
+async function fbDeleteFile(mid){}
 
 // Init admin if needed
 async function initFirebaseDB(){
