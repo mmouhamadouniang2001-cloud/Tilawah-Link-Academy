@@ -487,6 +487,7 @@ window.loadAdminData=function(){
         }
         if(u.status!=='active')btns+='<button class="btn btn-success" style="padding:5px 10px;font-size:.8rem;margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'active\')">Activer</button>';
         if(u.status!=='blocked')btns+='<button class="btn btn-danger" style="padding:5px 10px;font-size:.8rem;margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'blocked\')">Bloquer</button>';
+        btns+='<button class="btn" style="padding:5px 10px;font-size:.8rem;margin:2px;background:#6c757d;color:white;" onclick="adminDeleteUser(\''+u.id+'\')"><i class="fa-solid fa-trash"></i> Supprimer</button>';
         var tr=document.createElement('tr');
         tr.innerHTML='<td>'+u.name+'</td><td>'+(u.role||'').toUpperCase()+'</td><td>'+u.phone+'</td><td>'+(u.city||'')+'</td><td>'+sb+'</td><td>'+payInfo+'</td><td>'+btns+'</td>';
         tb.appendChild(tr);
@@ -518,7 +519,18 @@ window.adminValidatePayment=function(uid){
     alert('Paiement validé ! L\'enseignant a maintenant accès pour 30 jours.');
     loadAdminData();
 }
-
-
-
-
+window.adminDeleteUser=function(uid){
+    if(!confirm('Êtes-vous sûr de vouloir supprimer définitivement ce compte ? L\'utilisateur pourra se réinscrire avec le même numéro.'))return;
+    var users=dbGet('tla_users',[]),newUsers=[];
+    for(var i=0;i<users.length;i++){if(users[i].id!==uid)newUsers.push(users[i]);}
+    dbSet('tla_users',newUsers);
+    // Supprimer les médias de l'utilisateur
+    var allMedia=dbGet('tla_media',[]),newMedia=[];
+    for(var m=0;m<allMedia.length;m++){
+        if(allMedia[m].userId===uid){delBlob(allMedia[m].id,null);}
+        else{newMedia.push(allMedia[m]);}
+    }
+    dbSet('tla_media',newMedia);
+    alert('Compte supprimé avec succès.');
+    loadAdminData();
+}
