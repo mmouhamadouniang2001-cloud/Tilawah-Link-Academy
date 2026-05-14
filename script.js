@@ -1,143 +1,538 @@
 window.onerror=function(msg,s,l){document.body.innerHTML='<div style="background:red;color:white;padding:20px"><h2>Erreur</h2><p>'+msg+'</p><p>Ligne: '+l+'</p></div>'+document.body.innerHTML;};
-window.onunhandledrejection=function(e){alert('Erreur: '+e.reason);};
-document.addEventListener("DOMContentLoaded",async function(){try{await initFirebaseDB();await refreshInterface();}catch(e){alert('Erreur Firebase: '+e.message);console.error(e);}});
-function hideAllViews(){var ids=['view-auth','view-payment','view-platform','view-admin','page-main-content','page-profile','page-teachers'];for(var i=0;i<ids.length;i++){var el=document.getElementById(ids[i]);if(el)el.classList.add('hidden');}var m=document.getElementById('teacher-modal');if(m)m.classList.add('hidden');}
+window.onunhandledrejection=function(e){console.error('Unhandled:',e.reason);};
 
+document.addEventListener("DOMContentLoaded",async function(){
+  try{await initFirebaseDB();await refreshInterface();}
+  catch(e){alert('Erreur Firebase: '+e.message);console.error(e);}
+  finally{var loader=document.getElementById('app-loader');if(loader)loader.classList.add('hidden');}
+});
+
+// ===== HIDE LOADER =====
+function hideLoader(){var l=document.getElementById('app-loader');if(l)l.classList.add('hidden');}
+
+// ===== VIEW MANAGEMENT =====
+function hideAllViews(){
+  var ids=['view-auth','view-payment','view-platform'];
+  for(var i=0;i<ids.length;i++){var el=document.getElementById(ids[i]);if(el)el.classList.add('hidden');}
+}
+function hideAllPages(){
+  var pages=document.querySelectorAll('.view-page');
+  pages.forEach(function(p){p.classList.add('hidden');});
+}
+window.goToView=function(name){
+  hideAllPages();
+  var el=document.getElementById('v-'+name);
+  if(el)el.classList.remove('hidden');
+  // Update nav active states
+  document.querySelectorAll('.nav-icon-btn').forEach(function(b){b.classList.remove('active');});
+  var ab=document.querySelector('.nav-icon-btn[data-view="'+name+'"]');if(ab)ab.classList.add('active');
+  document.querySelectorAll('.bottom-nav button').forEach(function(b){b.classList.remove('active');});
+  var bb=document.querySelector('.bottom-nav button[data-view="'+name+'"]');if(bb)bb.classList.add('active');
+  // Close menus
+  closeDD();closeMM();
+  window.scrollTo({top:0,behavior:'smooth'});
+  // Load data
+  if(name==='home')loadHomeData();
+  if(name==='categories')loadCategories();
+  if(name==='teachers')loadTeachersView();
+  if(name==='messages')loadMessages();
+  if(name==='notifications')loadNotifications();
+  if(name==='profile')loadProfile();
+  if(name==='admin')loadAdminData();
+};
+
+// ===== REFRESH INTERFACE =====
 window.refreshInterface=async function(){
   hideAllViews();var user=getSession();
-  if(!user){document.getElementById('view-auth').classList.remove('hidden');switchAuth('login');return;}
+  if(!user){document.getElementById('view-auth').classList.remove('hidden');switchAuth('login');hideLoader();return;}
   var fresh=await fbGetUser(user.id);if(fresh){user=fresh;setSession(user);}
-  if(user.needsPasswordChange){document.getElementById('view-auth').classList.remove('hidden');switchAuth('force-pass');return;}
-  if(user.role==='admin'){document.getElementById('view-admin').classList.remove('hidden');await loadAdminData();return;}
-  if(user.role==='enseignant'){
+  if(user.needsPasswordChange){document.getElementById('view-auth').classList.remove('hidden');switchAuth('force-pass');hideLoader();return;}
+  if(user.role==='admin'||user.activeRole==='admin'){
+    document.getElementById('view-platform').classList.remove('hidden');
+    setupNav(user);goToView('admin');hideLoader();return;
+  }
+  if(user.role==='enseignant'||user.activeRole==='enseignant'){
     if(user.paymentDate){var d=Math.floor((new Date()-new Date(user.paymentDate))/(864e5));if(d>=30&&user.paymentStatus!=='awaiting'){user.paymentStatus='expired';await fbSetUser(user.id,{paymentStatus:'expired'});setSession(user);}}
-    if(user.status==='pending'||user.paymentStatus==='expired'){document.getElementById('view-payment').classList.remove('hidden');showPayScreen(user);return;}
-    if(user.paymentStatus==='awaiting'){document.getElementById('view-payment').classList.remove('hidden');showWaitingScreen();return;}
+    if(user.status==='pending'||user.paymentStatus==='expired'){document.getElementById('view-payment').classList.remove('hidden');showPayScreen(user);hideLoader();return;}
+    if(user.paymentStatus==='awaiting'){document.getElementById('view-payment').classList.remove('hidden');showWaitingScreen();hideLoader();return;}
   }
   if(user.status==='blocked'){alert('Votre compte a été bloqué.');appLogout();return;}
-  document.getElementById('view-platform').classList.remove('hidden');showMainPage();
-  var wm=document.getElementById('hero-welcome-msg');if(wm)wm.innerHTML='Bienvenue <strong>'+user.name+'</strong> sur <strong>Tilawah Link Academy</strong>, votre espace dédié à l\'apprentissage et à l\'enseignement islamique.';
-  var ab=document.getElementById('admin-panel-btn');if(ab){if(user.role==='admin')ab.classList.remove('hidden');else ab.classList.add('hidden');}
-  var eb=document.getElementById('nav-espace-btn'),pb=document.getElementById('nav-profile-btn');
-  if(user.role==='enseignant'){if(eb)eb.classList.remove('hidden');if(pb)pb.classList.add('hidden');}else{if(eb)eb.classList.add('hidden');if(pb)pb.classList.remove('hidden');}
+  document.getElementById('view-platform').classList.remove('hidden');
+  setupNav(user);goToView('home');hideLoader();
 };
-function showPayScreen(u){var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.remove('hidden');if(sw)sw.classList.add('hidden');var t=document.getElementById('pay-title'),m=document.getElementById('pay-msg');if(u.paymentStatus==='expired'){if(t)t.textContent='Renouvellement de votre abonnement';if(m)m.innerHTML='Votre abonnement a expiré. Renouvelez <strong>1 000 FCFA</strong> via Wave.';}else{if(t)t.textContent='Activation de votre compte';if(m)m.innerHTML='Effectuez votre paiement de <strong>1 000 FCFA</strong> via Wave.';}}
-function showWaitingScreen(){var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.add('hidden');if(sw)sw.classList.remove('hidden');}
-window.confirmPayment=async function(){var u=getSession();if(!u)return;u.paymentStatus='awaiting';await fbSetUser(u.id,{paymentStatus:'awaiting'});setSession(u);showWaitingScreen();var r=u.paymentDate?'renouvellement':'première inscription';var wa=encodeURIComponent('Salam Cher Administrateur,\n\nJe suis '+u.name+' ('+u.phone+'), enseignant sur Tilawah Link Academy.\n\nPaiement 1 000 FCFA pour mon '+r+'.\n\nMerci de valider.\n\nBarakAllahu fik.');window.open('https://wa.me/221774599835?text='+wa,'_blank');};
-window.updateStats=async function(){var users=await fbGetAllUsers();var t=0,s=0;for(var i=0;i<users.length;i++){if(users[i].role==='enseignant')t++;else if(users[i].role==='apprenant')s++;}var st=document.getElementById('stat-teachers');if(st)st.textContent=t;var ss=document.getElementById('stat-students');if(ss)ss.textContent=s;var tt=document.getElementById('stat-total');if(tt)tt.textContent=t+s;};
-window.goToPlatform=async function(){document.getElementById('view-admin').classList.add('hidden');document.getElementById('view-platform').classList.remove('hidden');var ab=document.getElementById('admin-panel-btn');if(ab)ab.classList.remove('hidden');var u=getSession();var wm=document.getElementById('hero-welcome-msg');if(wm&&u)wm.innerHTML='Bienvenue <strong>'+u.name+'</strong> sur <strong>Tilawah Link Academy</strong>';var eb=document.getElementById('nav-espace-btn'),pb=document.getElementById('nav-profile-btn');if(eb)eb.classList.add('hidden');if(pb)pb.classList.remove('hidden');showMainPage();};
-window.toggleMobileMenu=function(){var n=document.getElementById('nav-center');if(n)n.classList.toggle('open');};
-window.closeMobileMenu=function(){var n=document.getElementById('nav-center');if(n)n.classList.remove('open');};
-window.goToAdmin=async function(){document.getElementById('view-platform').classList.add('hidden');document.getElementById('view-admin').classList.remove('hidden');await loadAdminData();};
-window.showMainPage=function(){document.getElementById('page-profile').classList.add('hidden');var pt=document.getElementById('page-teachers');if(pt)pt.classList.add('hidden');document.getElementById('page-main-content').classList.remove('hidden');var nl=document.getElementById('platform-nav-links');if(nl)nl.classList.remove('hidden');};
-window.showTeachersPage=async function(){document.getElementById('page-main-content').classList.add('hidden');document.getElementById('page-profile').classList.add('hidden');var pt=document.getElementById('page-teachers');if(pt)pt.classList.remove('hidden');var nl=document.getElementById('platform-nav-links');if(nl)nl.classList.remove('hidden');await renderTeachersList();window.scrollTo({top:0,behavior:'smooth'});};
-window.goToSection=function(sid){if(sid==='enseignants'){showTeachersPage();return;}document.getElementById('page-profile').classList.add('hidden');var pt=document.getElementById('page-teachers');if(pt)pt.classList.add('hidden');document.getElementById('page-main-content').classList.remove('hidden');setTimeout(function(){var t=document.getElementById(sid);if(t){window.scrollTo({top:t.getBoundingClientRect().top+window.pageYOffset-70,behavior:'smooth'});}},100);};
-window.navToProfile=async function(){document.getElementById('page-main-content').classList.add('hidden');var pt=document.getElementById('page-teachers');if(pt)pt.classList.add('hidden');document.getElementById('page-profile').classList.remove('hidden');await fillProfileForm();};
-window.switchAuth=function(id){var s=['login','register','forgot','force-pass'];for(var i=0;i<s.length;i++)document.getElementById('auth-'+s[i]).classList.add('hidden');document.getElementById('auth-'+id).classList.remove('hidden');};
-window.selectRole=function(r){document.getElementById('btn-role-apprenant').className='role-btn';document.getElementById('btn-role-enseignant').className='role-btn';document.getElementById('btn-role-'+r).className='role-btn active';document.getElementById('reg-role').value=r;if(r==='enseignant')document.getElementById('enseignant-options').classList.remove('hidden');else document.getElementById('enseignant-options').classList.add('hidden');};
-window.appRegister=async function(){var role=document.getElementById('reg-role').value,name=document.getElementById('reg-name').value.trim(),phone=document.getElementById('reg-phone').value.trim(),city=document.getElementById('reg-city').value.trim(),pass=document.getElementById('reg-pass').value;if(!name||!phone||!city||!pass){alert("Remplissez tous les champs.");return;}var specs=[],pubs=[];if(role==='enseignant'){var sc=document.querySelectorAll('.reg-spec:checked');for(var i=0;i<sc.length;i++)specs.push(sc[i].value);var pc=document.querySelectorAll('.reg-public:checked');for(var i=0;i<pc.length;i++)pubs.push(pc[i].value);if(specs.length===0){alert("Choisissez au moins une spécialité.");return;}}var ex=await fbFindByPhone(phone);if(ex){alert("Numéro déjà inscrit.");return;}var u={id:'u_'+Date.now(),role:role,name:name,phone:phone,city:city,password:pass,status:(role==='enseignant'?'pending':'active'),specs:specs,publics:pubs,bio:'',avatar:'',paymentStatus:'',paymentDate:''};await fbSetUser(u.id,u);setSession(u);await refreshInterface();};
-window.appLogin=async function(){var id=document.getElementById('login-id').value.trim(),pass=document.getElementById('login-pass').value;if(!id||!pass){alert("Remplissez vos identifiants.");return;}var found=await fbFindByLogin(id,pass);if(found){if(found.status==='blocked'){alert("Compte bloqué.");return;}setSession(found);await refreshInterface();}else{alert("Identifiants incorrects.");}};
-window.appForgotPass=async function(){var phone=document.getElementById('forgot-phone').value.trim();var u=await fbFindByPhone(phone);if(u){alert("Code '1234' envoyé au "+phone);await fbSetUser(u.id,{password:'1234',needsPasswordChange:true});switchAuth('login');}else{alert("Numéro introuvable.");}};
-window.appForcePassChange=async function(){var np=document.getElementById('force-new-pass').value;if(np.length<4){alert("Trop court.");return;}var cu=getSession();await fbSetUser(cu.id,{password:np,needsPasswordChange:false});cu.password=np;cu.needsPasswordChange=false;setSession(cu);await refreshInterface();};
-window.appLogout=function(){clearSession();refreshInterface();};
-window.proceedToProfileSetup=function(){document.getElementById('view-payment').classList.add('hidden');document.getElementById('view-platform').classList.remove('hidden');document.getElementById('platform-nav-links').classList.add('hidden');var eb=document.getElementById('nav-espace-btn');if(eb)eb.classList.remove('hidden');navToProfile();};
-// Part 2: Teachers, Profile, Media, Admin
-window.renderTeachersList=async function(){
-  var container=document.getElementById('teachers-list-container');if(!container)return;container.innerHTML='<p class="w-100 text-center">Chargement...</p>';
-  var ci=document.getElementById('search-city'),si=document.getElementById('search-spec'),pi=document.getElementById('search-public');
-  var sc=ci?ci.value.toLowerCase():'',ss=si?si.value:'',sp=pi?pi.value:'';
-  var users=await fbGetAllUsers();var allMedia=await fbGetAllMedia();var cu=getSession();container.innerHTML='';var count=0;
-  for(var i=0;i<users.length;i++){var u=users[i];if(u.role!=='enseignant'||u.status!=='active')continue;
-    if(sc&&(!u.city||u.city.toLowerCase().indexOf(sc)===-1))continue;
-    if(ss&&(!u.specs||u.specs.indexOf(ss)===-1))continue;
-    if(sp&&(!u.publics||u.publics.indexOf(sp)===-1))continue;count++;
-    var div=document.createElement('div');div.className='teacher-card';
-    var av=u.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(u.name)+'&background=1a3a6b&color=fff&size=150';
-    var spH='';if(u.specs)for(var s=0;s<u.specs.length;s++)spH+='<span class="badge">'+u.specs[s]+'</span>';
-    var puH='';if(u.publics)for(var p=0;p<u.publics.length;p++)puH+='<span class="public-badge">'+u.publics[p]+'</span>';
-    var bioH=u.bio?'<p class="teacher-bio">"'+u.bio.substring(0,100)+(u.bio.length>100?'...':'')+'"</p>':'';
-    var mc=0;for(var m=0;m<allMedia.length;m++){if(allMedia[m].userId===u.id)mc++;}
-    var mn=mc>0?'<p class="text-sm" style="margin-bottom:8px;"><i class="fa-solid fa-images"></i> '+mc+' média(s)</p>':'';
-    var waMsg=encodeURIComponent("Salam, je vous contacte via Tilawah Link Academy. Je suis "+((cu&&cu.name)?cu.name:"un apprenant")+".");
-    var waUrl="https://wa.me/"+(u.phone||"").replace(/[\+\s]/g,'')+"?text="+waMsg;
-    div.innerHTML='<div class="teacher-avatar"><img src="'+av+'"></div><div class="teacher-info"><h3>'+u.name+'</h3><p class="text-sm mb-3"><i class="fa-solid fa-location-dot"></i> '+(u.city||'')+'</p><div class="specs-badges">'+spH+'</div><div class="specs-badges" style="margin-bottom:8px;">'+puH+'</div>'+bioH+mn+'<button class="btn btn-primary w-100" style="margin-bottom:8px;" onclick="openTeacherModal(\''+u.id+'\')"><i class="fa-solid fa-eye"></i> Profil complet</button><a href="'+waUrl+'" target="_blank" class="btn btn-whatsapp w-100"><i class="fa-brands fa-whatsapp"></i> Contacter</a></div>';
-    container.appendChild(div);}
-  if(count===0)container.innerHTML='<p class="w-100 text-center mt-4">Aucun enseignant trouvé.</p>';
+
+// ===== NAV SETUP =====
+function setupNav(user){
+  var av=user.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(user.name||'U')+'&background=0d6e4e&color=fff&size=40';
+  var navAv=document.getElementById('nav-avatar');if(navAv)navAv.src=av;
+  var ddAv=document.getElementById('dd-avatar');if(ddAv)ddAv.src=av;
+  var ddN=document.getElementById('dd-name');if(ddN)ddN.textContent=user.name||'';
+  var ddR=document.getElementById('dd-role');if(ddR)ddR.textContent=user.activeRole||user.role||'';
+  var ddAdmin=document.getElementById('dd-admin-link');
+  if(ddAdmin){if(user.role==='admin')ddAdmin.classList.remove('hidden');else ddAdmin.classList.add('hidden');}
+  var ddSwitch=document.getElementById('dd-switch-role');
+  if(ddSwitch){
+    if(user.roles&&user.roles.length>1)ddSwitch.classList.remove('hidden');
+    else ddSwitch.classList.add('hidden');
+  }
+  var switchLabel=document.getElementById('dd-switch-label');
+  if(switchLabel){
+    var ar=user.activeRole||user.role;
+    switchLabel.textContent=ar==='enseignant'?'Passer Apprenant':'Passer Enseignant';
+  }
+}
+window.toggleProfileMenu=function(){var d=document.getElementById('profile-dropdown');if(d)d.classList.toggle('hidden');};
+window.closeDD=function(){var d=document.getElementById('profile-dropdown');if(d)d.classList.add('hidden');};
+window.toggleMobileMenu=function(){var m=document.getElementById('mobile-menu');if(m)m.classList.toggle('hidden');};
+window.closeMM=function(){var m=document.getElementById('mobile-menu');if(m)m.classList.add('hidden');};
+window.toggleRole=async function(){
+  var u=getSession();if(!u||!u.roles||u.roles.length<2)return;
+  var ar=u.activeRole||u.role;
+  u.activeRole=ar==='enseignant'?'apprenant':'enseignant';
+  await fbSetUser(u.id,{activeRole:u.activeRole});setSession(u);await refreshInterface();
 };
+
+// ===== AUTH =====
+window.switchAuth=function(id){
+  var s=['login','register','forgot','force-pass'];
+  for(var i=0;i<s.length;i++){var el=document.getElementById('auth-'+s[i]);if(el)el.classList.add('hidden');}
+  var show=document.getElementById('auth-'+id);if(show)show.classList.remove('hidden');
+};
+window.selectRole=function(r){
+  document.querySelectorAll('.role-opt').forEach(function(b){b.classList.remove('active');});
+  var btn=document.querySelector('.role-opt[data-role="'+r+'"]');if(btn)btn.classList.add('active');
+  document.getElementById('reg-role').value=r;
+  var opts=document.getElementById('reg-teacher-opts');
+  if(opts){if(r==='enseignant'||r==='both')opts.classList.remove('hidden');else opts.classList.add('hidden');}
+};
+window.appRegister=async function(){
+  var role=document.getElementById('reg-role').value;
+  var name=document.getElementById('reg-name').value.trim();
+  var phone=document.getElementById('reg-phone').value.trim();
+  var city=document.getElementById('reg-city').value.trim();
+  var pass=document.getElementById('reg-pass').value;
+  if(!name||!phone||!city||!pass){alert("Remplissez tous les champs.");return;}
+  var categories=[],disciplines=[],pubs=[];
+  if(role==='enseignant'||role==='both'){
+    document.querySelectorAll('#reg-categories-grid .chip-check input:checked').forEach(function(c){categories.push(c.value);});
+    document.querySelectorAll('#reg-disciplines-grid .chip-check input:checked').forEach(function(c){disciplines.push(c.value);});
+    document.querySelectorAll('.reg-public:checked').forEach(function(c){pubs.push(c.value);});
+  }
+  var ex=await fbFindByPhone(phone);if(ex){alert("Numéro déjà inscrit.");return;}
+  var roles=[];
+  if(role==='both'){roles=['apprenant','enseignant'];}
+  else{roles=[role];}
+  var u={id:'u_'+Date.now(),role:role==='both'?'enseignant':role,roles:roles,activeRole:role==='both'?'apprenant':role,
+    name:name,phone:phone,city:city,password:pass,
+    status:(role==='enseignant'||role==='both'?'pending':'active'),
+    categories:categories,disciplines:disciplines,publics:pubs,
+    bio:'',avatar:'',paymentStatus:'',paymentDate:'',
+    followers:[],following:[],isOnline:false,lastSeen:'',createdAt:new Date().toISOString()};
+  await fbSetUser(u.id,u);setSession(u);await refreshInterface();
+};
+window.appLogin=async function(){
+  var id=document.getElementById('login-id').value.trim();
+  var pass=document.getElementById('login-pass').value;
+  if(!id||!pass){alert("Remplissez vos identifiants.");return;}
+  var found=await fbFindByLogin(id,pass);
+  if(found){if(found.status==='blocked'){alert("Compte bloqué.");return;}setSession(found);await refreshInterface();}
+  else{alert("Identifiants incorrects.");}
+};
+window.appForgotPass=async function(){
+  var phone=document.getElementById('forgot-phone').value.trim();
+  var u=await fbFindByPhone(phone);
+  if(u){alert("Mot de passe réinitialisé à '1234'.");await fbSetUser(u.id,{password:'1234',needsPasswordChange:true});switchAuth('login');}
+  else{alert("Numéro introuvable.");}
+};
+window.appForcePassChange=async function(){
+  var np=document.getElementById('force-new-pass').value;
+  if(np.length<4){alert("Trop court (4 caractères min).");return;}
+  var cu=getSession();await fbSetUser(cu.id,{password:np,needsPasswordChange:false});
+  cu.password=np;cu.needsPasswordChange=false;setSession(cu);await refreshInterface();
+};
+window.appLogout=function(){clearSession();location.reload();};
+
+// ===== PAYMENT =====
+function showPayScreen(u){
+  var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');
+  if(sp)sp.classList.remove('hidden');if(sw)sw.classList.add('hidden');
+}
+function showWaitingScreen(){
+  var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');
+  if(sp)sp.classList.add('hidden');if(sw)sw.classList.remove('hidden');
+}
+window.confirmPayment=async function(){
+  var u=getSession();if(!u)return;
+  u.paymentStatus='awaiting';await fbSetUser(u.id,{paymentStatus:'awaiting'});setSession(u);
+  showWaitingScreen();
+};
+
+// ===== HOME =====
+async function loadHomeData(){
+  var u=getSession();
+  var hw=document.getElementById('hero-welcome');
+  if(hw&&u)hw.innerHTML='Bienvenue <span class="gradient-text">'+u.name+'</span>';
+  // Categories
+  var cg=document.getElementById('home-categories');
+  if(cg){cg.innerHTML='';var keys=Object.keys(CATEGORIES);
+    for(var i=0;i<Math.min(keys.length,8);i++){var k=keys[i];var c=CATEGORIES[k];
+      cg.innerHTML+='<div class="cat-card" onclick="goToView(\'categories\')"><i class="fa-solid '+c.icon+'" style="color:'+c.color+'"></i><h3>'+k+'</h3><span>'+c.disciplines.length+' disciplines</span></div>';
+    }
+  }
+  // Teachers preview
+  var tg=document.getElementById('home-teachers');
+  if(tg){tg.innerHTML='<p class="text-muted text-center" style="grid-column:1/-1">Chargement...</p>';
+    var users=await fbGetAllUsers();tg.innerHTML='';var count=0;
+    for(var i=0;i<users.length&&count<6;i++){
+      var t=users[i];if((t.role!=='enseignant'&&t.activeRole!=='enseignant')||t.status!=='active')continue;count++;
+      var av=t.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(t.name)+'&background=0d6e4e&color=fff&size=150';
+      var badges='';if(t.categories)for(var j=0;j<t.categories.length;j++)badges+='<span class="badge">'+t.categories[j]+'</span>';
+      if(t.disciplines)for(var j=0;j<Math.min(t.disciplines.length,2);j++)badges+='<span class="badge">'+t.disciplines[j]+'</span>';
+      tg.innerHTML+='<div class="teacher-card" onclick="openTeacherModal(\''+t.id+'\')"><div class="teacher-avatar"><img src="'+av+'"></div><div class="teacher-info"><h3>'+t.name+'</h3><p class="text-sm"><i class="fa-solid fa-location-dot"></i> '+(t.city||'')+'</p><div class="specs-badges">'+badges+'</div></div></div>';
+    }
+    if(count===0)tg.innerHTML='<p class="text-muted text-center" style="grid-column:1/-1">Aucun enseignant disponible pour le moment.</p>';
+  }
+  // Stats
+  var hs=document.getElementById('hero-stats');
+  if(hs){var users=await fbGetAllUsers();var tc=0,sc=0;
+    for(var i=0;i<users.length;i++){if(users[i].role==='enseignant')tc++;else if(users[i].role!=='admin')sc++;}
+    hs.innerHTML='<div><strong>'+tc+'</strong><span>Enseignants</span></div><div><strong>'+sc+'</strong><span>Apprenants</span></div><div><strong>'+Object.keys(CATEGORIES).length+'</strong><span>Catégories</span></div>';
+  }
+}
+
+// ===== CATEGORIES =====
+function loadCategories(){
+  var cg=document.getElementById('categories-full');if(!cg)return;cg.innerHTML='';
+  var keys=Object.keys(CATEGORIES);
+  for(var i=0;i<keys.length;i++){var k=keys[i];var c=CATEGORIES[k];
+    cg.innerHTML+='<div class="cat-card" onclick="filterByCategory(\''+k+'\')"><i class="fa-solid '+c.icon+'" style="color:'+c.color+'"></i><h3>'+k+'</h3><span>'+c.disciplines.length+' disciplines</span></div>';
+  }
+}
+window.filterByCategory=function(cat){
+  goToView('teachers');
+  setTimeout(function(){var sel=document.getElementById('t-category');if(sel){sel.value=cat;renderTeachers();}},100);
+};
+
+// ===== TEACHERS =====
+async function loadTeachersView(){
+  // Populate category filter
+  var sel=document.getElementById('t-category');
+  if(sel&&sel.options.length<=1){
+    var keys=Object.keys(CATEGORIES);
+    for(var i=0;i<keys.length;i++){var o=document.createElement('option');o.value=keys[i];o.textContent=keys[i];sel.appendChild(o);}
+  }
+  await renderTeachers();
+}
+window.updateDisciplineFilter=function(){
+  var cat=document.getElementById('t-category').value;
+  var dSel=document.getElementById('t-discipline');
+  if(!dSel)return;dSel.innerHTML='<option value="">Toutes disciplines</option>';
+  if(cat&&CATEGORIES[cat]){
+    for(var i=0;i<CATEGORIES[cat].disciplines.length;i++){
+      var o=document.createElement('option');o.value=CATEGORIES[cat].disciplines[i];o.textContent=CATEGORIES[cat].disciplines[i];dSel.appendChild(o);
+    }
+  }
+};
+window.renderTeachers=async function(){
+  var container=document.getElementById('teachers-list');if(!container)return;
+  container.innerHTML='<p class="text-muted text-center" style="grid-column:1/-1">Chargement...</p>';
+  var search=(document.getElementById('t-search')||{}).value||'';search=search.toLowerCase();
+  var cat=(document.getElementById('t-category')||{}).value||'';
+  var disc=(document.getElementById('t-discipline')||{}).value||'';
+  var pub=(document.getElementById('t-public')||{}).value||'';
+  var users=await fbGetAllUsers();var cu=getSession();container.innerHTML='';var count=0;
+  for(var i=0;i<users.length;i++){var t=users[i];
+    if(t.role!=='enseignant'||t.status!=='active')continue;
+    if(search&&t.name.toLowerCase().indexOf(search)===-1&&(!t.city||t.city.toLowerCase().indexOf(search)===-1))continue;
+    if(cat&&(!t.categories||t.categories.indexOf(cat)===-1))continue;
+    if(disc&&(!t.disciplines||t.disciplines.indexOf(disc)===-1))continue;
+    if(pub&&(!t.publics||t.publics.indexOf(pub)===-1))continue;
+    count++;
+    var av=t.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(t.name)+'&background=0d6e4e&color=fff&size=150';
+    var badges='';
+    if(t.categories)for(var j=0;j<t.categories.length;j++)badges+='<span class="badge">'+t.categories[j]+'</span>';
+    if(t.disciplines)for(var j=0;j<t.disciplines.length;j++)badges+='<span class="badge">'+t.disciplines[j]+'</span>';
+    var pubBadges='';if(t.publics)for(var j=0;j<t.publics.length;j++)pubBadges+='<span class="public-badge">'+t.publics[j]+'</span>';
+    var bio=t.bio?'<p class="teacher-bio">"'+t.bio.substring(0,80)+(t.bio.length>80?'...':'')+'"</p>':'';
+    container.innerHTML+='<div class="teacher-card"><div class="teacher-avatar"><img src="'+av+'"></div><div class="teacher-info"><h3>'+t.name+'</h3><p class="text-sm"><i class="fa-solid fa-location-dot"></i> '+(t.city||'')+'</p><div class="specs-badges">'+badges+'</div><div class="specs-badges">'+pubBadges+'</div>'+bio+'<button class="btn-main w-full" style="margin-top:8px" onclick="openTeacherModal(\''+t.id+'\')"><i class="fa-solid fa-eye"></i> Voir profil</button><button class="btn-outline-main w-full" style="margin-top:6px" onclick="startConversation(\''+t.id+'\')"><i class="fa-solid fa-comment-dots"></i> Message</button></div></div>';
+  }
+  if(count===0)container.innerHTML='<p class="text-muted text-center" style="grid-column:1/-1">Aucun enseignant trouvé.</p>';
+};
+window.handleGlobalSearch=function(e){
+  if(e.key==='Enter'){var v=document.getElementById('global-search').value;
+    goToView('teachers');setTimeout(function(){var s=document.getElementById('t-search');if(s){s.value=v;renderTeachers();}},100);
+  }
+};
+
+// ===== TEACHER MODAL =====
 window.openTeacherModal=async function(tid){
-  var t=await fbGetUser(tid);if(!t)return;var allMedia=await fbGetAllMedia();var cu=getSession();
-  var av=t.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(t.name)+'&background=1a3a6b&color=fff&size=200';
-  var spH='';if(t.specs)for(var s=0;s<t.specs.length;s++)spH+='<span class="badge">'+t.specs[s]+'</span> ';
-  var puH='';if(t.publics)for(var p=0;p<t.publics.length;p++)puH+='<span class="public-badge">'+t.publics[p]+'</span> ';
-  var waMsg=encodeURIComponent("Salam, je vous contacte via Tilawah Link Academy. Je suis "+((cu&&cu.name)?cu.name:"un apprenant")+".");
-  var waUrl="https://wa.me/"+(t.phone||"").replace(/[\+\s]/g,'')+"?text="+waMsg;
+  var t=await fbGetUser(tid);if(!t)return;var cu=getSession();
+  var av=t.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(t.name)+'&background=0d6e4e&color=fff&size=200';
+  var badges='';if(t.categories)for(var j=0;j<t.categories.length;j++)badges+='<span class="badge">'+t.categories[j]+'</span> ';
+  if(t.disciplines)for(var j=0;j<t.disciplines.length;j++)badges+='<span class="badge">'+t.disciplines[j]+'</span> ';
+  var pubH='';if(t.publics)for(var j=0;j<t.publics.length;j++)pubH+='<span class="public-badge">'+t.publics[j]+'</span> ';
   var body=document.getElementById('teacher-modal-body');
-  var hasMedia=false;for(var m=0;m<allMedia.length;m++){if(allMedia[m].userId===t.id){hasMedia=true;break;}}
-  body.innerHTML='<button class="modal-close" onclick="closeTeacherModal()">&times;</button>'
-    +'<div class="text-center"><img src="'+av+'" style="width:150px;height:150px;border-radius:50%;object-fit:cover;border:5px solid var(--primary);margin-bottom:20px;"></div>'
-    +'<h2 class="text-center" style="margin-bottom:5px;">'+t.name+'</h2>'
-    +'<p class="text-center text-sm mb-3"><i class="fa-solid fa-location-dot"></i> '+(t.city||'')+'</p>'
-    +'<div class="text-center mb-3">'+spH+'</div>'+(puH?'<div class="text-center mb-3">'+puH+'</div>':'')
-    +(t.bio?'<div style="background:var(--bg);padding:20px;border-radius:15px;margin-bottom:20px;"><h4 style="margin-bottom:10px;">📝 Présentation</h4><p style="white-space:pre-wrap;">'+t.bio+'</p></div>':'')
-    +(hasMedia?'<h4 style="margin-bottom:10px;">📸 Galerie</h4><div id="modal-gallery-items" class="modal-gallery"></div>':'')
-    +'<a href="'+waUrl+'" target="_blank" class="btn btn-whatsapp w-100 mt-4" style="display:flex;align-items:center;justify-content:center;gap:10px;font-size:1.1rem;padding:15px;"><i class="fa-brands fa-whatsapp"></i> Contacter sur WhatsApp</a>';
-  if(hasMedia){var gc=document.getElementById('modal-gallery-items');for(var m=0;m<allMedia.length;m++){if(allMedia[m].userId===t.id){(function(media){fbGetFileUrl(media.id).then(function(url){if(!url||!gc)return;if(media.type&&media.type.startsWith('video/')){var v=document.createElement('video');v.src=url;v.controls=true;v.style.maxWidth='100%';v.style.borderRadius='12px';gc.appendChild(v);}else{var img=document.createElement('img');img.src=url;img.style.maxWidth='100%';img.style.borderRadius='12px';gc.appendChild(img);}});})(allMedia[m]);}}}
+  body.innerHTML='<button class="modal-close" onclick="closeModal(\'teacher-modal\')">&times;</button>'
+    +'<div class="text-center"><img src="'+av+'" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid var(--turquoise);margin-bottom:16px;"></div>'
+    +'<h2 class="text-center" style="margin-bottom:4px;">'+t.name+'</h2>'
+    +'<p class="text-center text-sm mb-2"><i class="fa-solid fa-location-dot"></i> '+(t.city||'')+'</p>'
+    +'<div class="text-center mb-2">'+badges+'</div>'
+    +(pubH?'<div class="text-center mb-2">'+pubH+'</div>':'')
+    +(t.bio?'<div style="background:var(--bg);padding:16px;border-radius:var(--radius);margin:16px 0;"><p style="white-space:pre-wrap;">'+t.bio+'</p></div>':'')
+    +'<button class="btn-main w-full mt-2" onclick="startConversation(\''+t.id+'\');closeModal(\'teacher-modal\')"><i class="fa-solid fa-comment-dots"></i> Envoyer un message</button>';
   document.getElementById('teacher-modal').classList.remove('hidden');
 };
-window.closeTeacherModal=function(){document.getElementById('teacher-modal').classList.add('hidden');};
-window.fillProfileForm=async function(){
+window.closeModal=function(id){document.getElementById(id).classList.add('hidden');};
+
+// ===== MESSAGES =====
+var currentConvId=null,msgListener=null,convListener=null;
+async function loadMessages(){
   var cu=getSession();if(!cu)return;
-  var ensH=document.getElementById('espace-ens-header'),appH=document.getElementById('espace-app-header'),pw=document.getElementById('profile-warning'),pa=document.getElementById('profile-active');
-  if(cu.role==='enseignant'){if(ensH)ensH.classList.remove('hidden');if(appH)appH.classList.add('hidden');document.getElementById('profile-teacher-options').classList.remove('hidden');if(cu.status==='pending'){if(pw)pw.classList.remove('hidden');if(pa)pa.classList.add('hidden');}else{if(pw)pw.classList.add('hidden');if(pa)pa.classList.remove('hidden');}document.getElementById('my-bio').value=cu.bio||'';var cbs=document.querySelectorAll('.prof-spec');for(var i=0;i<cbs.length;i++)cbs[i].checked=cu.specs&&cu.specs.indexOf(cbs[i].value)!==-1;await renderMyGallery();}else{if(ensH)ensH.classList.add('hidden');if(appH)appH.classList.remove('hidden');document.getElementById('profile-teacher-options').classList.add('hidden');}
-  if(cu.avatar)document.getElementById('my-avatar-preview').src=cu.avatar;
+  if(convListener)convListener();
+  convListener=fbListenConversations(cu.id,function(convs){renderConvList(convs);});
+}
+async function renderConvList(convs){
+  var cl=document.getElementById('conv-list');if(!cl)return;
+  var cu=getSession();if(!cu)return;
+  if(convs.length===0){cl.innerHTML='<p class="empty-msg">Aucune conversation</p>';return;}
+  cl.innerHTML='';
+  for(var i=0;i<convs.length;i++){
+    var c=convs[i];var otherId=c.participants[0]===cu.id?c.participants[1]:c.participants[0];
+    var other=await fbGetUser(otherId);if(!other)continue;
+    var av=other.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(other.name)+'&background=0d6e4e&color=fff&size=44';
+    var unread=c.unread&&c.unread[cu.id]?c.unread[cu.id]:0;
+    var lastMsg=c.lastMessage?c.lastMessage.text||'':'Nouvelle conversation';
+    var div=document.createElement('div');div.className='conv-item'+(currentConvId===c.id?' active':'');
+    div.setAttribute('data-conv-id',c.id);
+    div.innerHTML='<img src="'+av+'"><div class="conv-item-info"><strong>'+other.name+'</strong><p>'+lastMsg.substring(0,40)+'</p></div>'+(unread>0?'<div class="conv-unread">'+unread+'</div>':'');
+    div.onclick=(function(convId,otherUser){return function(){openConversation(convId,otherUser);};})(c.id,other);
+    cl.appendChild(div);
+  }
+}
+async function openConversation(convId,otherUser){
+  currentConvId=convId;var cu=getSession();
+  var ca=document.getElementById('chat-area');if(!ca)return;
+  var av=otherUser.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(otherUser.name)+'&background=0d6e4e&color=fff&size=40';
+  ca.innerHTML='<div class="chat-header"><img src="'+av+'"><div><strong>'+otherUser.name+'</strong><br><small>'+(otherUser.city||'')+'</small></div></div><div class="chat-messages" id="chat-messages"></div><div class="chat-input"><input type="text" id="msg-input" placeholder="Votre message..." onkeyup="if(event.key===\'Enter\')sendMessage()"><button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button></div>';
+  await fbMarkAsRead(convId,cu.id);
+  if(msgListener)msgListener();
+  msgListener=fbListenMessages(convId,function(msgs){
+    var mc=document.getElementById('chat-messages');if(!mc)return;mc.innerHTML='';
+    for(var i=0;i<msgs.length;i++){var m=msgs[i];
+      var cls=m.senderId===cu.id?'sent':'received';
+      mc.innerHTML+='<div class="msg-bubble '+cls+'">'+m.text+'<span class="msg-time">'+new Date(m.timestamp).toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'})+'</span></div>';
+    }
+    mc.scrollTop=mc.scrollHeight;
+  });
+  // Update sidebar active
+  document.querySelectorAll('.conv-item').forEach(function(c){c.classList.remove('active');});
+  var ac=document.querySelector('.conv-item[data-conv-id="'+convId+'"]');if(ac)ac.classList.add('active');
+}
+window.sendMessage=async function(){
+  var input=document.getElementById('msg-input');if(!input||!input.value.trim())return;
+  var cu=getSession();if(!cu||!currentConvId)return;
+  var conv=null;
+  try{var doc=await db.collection('conversations').doc(currentConvId).get();if(doc.exists)conv=doc.data();}catch(e){}
+  if(!conv)return;
+  var recipientId=conv.participants[0]===cu.id?conv.participants[1]:conv.participants[0];
+  await fbSendMessage(currentConvId,{text:input.value.trim(),senderId:cu.id,recipientId:recipientId,timestamp:new Date().toISOString(),type:'text'});
+  input.value='';
 };
-window.saveMyProfile=async function(){
-  var cu=getSession();if(!cu)return;var data={};
-  if(cu.role==='enseignant'){data.bio=document.getElementById('my-bio').value;var ns=[];var cbs=document.querySelectorAll('.prof-spec:checked');for(var i=0;i<cbs.length;i++)ns.push(cbs[i].value);data.specs=ns;}
-  var fi=document.getElementById('my-avatar-input');
-  if(fi.files.length>0){var reader=new FileReader();reader.onload=async function(e){data.avatar=e.target.result;await fbSetUser(cu.id,data);Object.assign(cu,data);setSession(cu);alert("Profil enregistré !");await fillProfileForm();};reader.readAsDataURL(fi.files[0]);}
-  else{await fbSetUser(cu.id,data);Object.assign(cu,data);setSession(cu);alert("Profil enregistré !");}
+window.startConversation=async function(otherId){
+  var cu=getSession();if(!cu)return;
+  var conv=await fbGetOrCreateConversation(cu.id,otherId);
+  var other=await fbGetUser(otherId);if(!other)return;
+  goToView('messages');
+  setTimeout(function(){openConversation(conv.id,other);},300);
 };
-window.uploadMediaToGallery=async function(){
-  var cu=getSession();var fi=document.getElementById('my-gallery-upload');if(fi.files.length===0)return;
-  var file=fi.files[0];var maxSize=file.type.startsWith('video/')?1073741824:104857600;
-  if(file.size>maxSize){alert('Fichier trop volumineux.');return;}
+window.filterConversations=function(){
+  var q=(document.getElementById('conv-search-input')||{}).value||'';q=q.toLowerCase();
+  document.querySelectorAll('.conv-item').forEach(function(c){
+    var name=c.querySelector('strong');
+    if(name&&name.textContent.toLowerCase().indexOf(q)!==-1)c.style.display='';else c.style.display='none';
+  });
+};
+
+// ===== PROFILE =====
+async function loadProfile(){
+  var cu=getSession();if(!cu)return;
+  var av=cu.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(cu.name)+'&background=0d6e4e&color=fff&size=100';
+  var pa=document.getElementById('prof-avatar');if(pa)pa.src=av;
+  var pn=document.getElementById('prof-name');if(pn)pn.textContent=cu.name;
+  var pr=document.getElementById('prof-role-badge');if(pr)pr.textContent=cu.activeRole||cu.role;
+  var pni=document.getElementById('prof-name-input');if(pni)pni.value=cu.name||'';
+  var pci=document.getElementById('prof-city-input');if(pci)pci.value=cu.city||'';
+  var pfl=document.getElementById('prof-followers');if(pfl)pfl.textContent=(cu.followers||[]).length;
+  var pfg=document.getElementById('prof-following');if(pfg)pfg.textContent=(cu.following||[]).length;
+  // Teacher section
+  var ts=document.getElementById('prof-teacher-section');
+  if(ts){
+    if(cu.role==='enseignant'||cu.activeRole==='enseignant'||(cu.roles&&cu.roles.indexOf('enseignant')!==-1)){
+      ts.classList.remove('hidden');
+      var bio=document.getElementById('prof-bio');if(bio)bio.value=cu.bio||'';
+      // Render chips
+      renderChips('prof-categories-grid',Object.keys(CATEGORIES),cu.categories||[],'prof-cat');
+      var allDisc=[];Object.keys(CATEGORIES).forEach(function(k){CATEGORIES[k].disciplines.forEach(function(d){if(allDisc.indexOf(d)===-1)allDisc.push(d);});});
+      renderChips('prof-disciplines-grid',allDisc,cu.disciplines||[],'prof-disc');
+      renderChips('prof-publics-grid',['Enfants','Adultes','Femmes','Hommes'],cu.publics||[],'prof-pub');
+    }else{ts.classList.add('hidden');}
+  }
+  // Roles manager
+  var rm=document.getElementById('roles-manager');
+  if(rm){rm.innerHTML='';
+    var allRoles=cu.roles||[cu.role];
+    allRoles.forEach(function(r){
+      rm.innerHTML+='<div class="role-card'+(r===(cu.activeRole||cu.role)?' active':'')+'">'+r+'</div>';
+    });
+  }
+}
+function renderChips(containerId,options,selected,prefix){
+  var c=document.getElementById(containerId);if(!c)return;c.innerHTML='';
+  for(var i=0;i<options.length;i++){
+    var checked=selected.indexOf(options[i])!==-1?'checked':'';
+    c.innerHTML+='<label class="chip-check"><input type="checkbox" class="'+prefix+'" value="'+options[i]+'" '+checked+'> '+options[i]+'</label>';
+  }
+}
+// Init registration chips
+function initRegChips(){
+  var cg=document.getElementById('reg-categories-grid');
+  if(cg&&cg.children.length===0){
+    Object.keys(CATEGORIES).forEach(function(k){
+      cg.innerHTML+='<label class="chip-check"><input type="checkbox" value="'+k+'"> '+k+'</label>';
+    });
+  }
+  var dg=document.getElementById('reg-disciplines-grid');
+  if(dg&&dg.children.length===0){
+    var allDisc=[];Object.keys(CATEGORIES).forEach(function(k){CATEGORIES[k].disciplines.forEach(function(d){if(allDisc.indexOf(d)===-1)allDisc.push(d);});});
+    allDisc.forEach(function(d){dg.innerHTML+='<label class="chip-check"><input type="checkbox" value="'+d+'"> '+d+'</label>';});
+  }
+}
+setTimeout(initRegChips,500);
+
+window.saveProfile=async function(){
+  var cu=getSession();if(!cu)return;
+  var data={};
+  data.name=(document.getElementById('prof-name-input')||{}).value||cu.name;
+  data.city=(document.getElementById('prof-city-input')||{}).value||cu.city;
+  if(cu.role==='enseignant'||(cu.roles&&cu.roles.indexOf('enseignant')!==-1)){
+    data.bio=(document.getElementById('prof-bio')||{}).value||'';
+    data.categories=[];document.querySelectorAll('.prof-cat:checked').forEach(function(c){data.categories.push(c.value);});
+    data.disciplines=[];document.querySelectorAll('.prof-disc:checked').forEach(function(c){data.disciplines.push(c.value);});
+    data.publics=[];document.querySelectorAll('.prof-pub:checked').forEach(function(c){data.publics.push(c.value);});
+  }
+  await fbSetUser(cu.id,data);Object.assign(cu,data);setSession(cu);
+  alert("Profil enregistré !");setupNav(cu);loadProfile();
+};
+window.uploadAvatar=async function(input){
+  if(!input.files||!input.files[0])return;var cu=getSession();if(!cu)return;
+  var file=input.files[0];
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    var data={avatar:e.target.result};
+    await fbSetUser(cu.id,data);cu.avatar=data.avatar;setSession(cu);
+    setupNav(cu);loadProfile();
+  };
+  reader.readAsDataURL(file);
+};
+window.uploadGalleryMedia=async function(){
+  var fi=document.getElementById('gallery-upload');if(!fi||!fi.files||!fi.files[0])return;
+  var cu=getSession();var file=fi.files[0];
   var mid='m_'+Date.now();var url=await fbUploadFile(mid,file);
   await fbAddMedia(mid,{id:mid,userId:cu.id,type:file.type,url:url});
-  fi.value='';await renderMyGallery();
+  fi.value='';loadProfile();
 };
-async function renderMediaItem(mid,mtype,container,showDel,extra){
-  var url=await fbGetFileUrl(mid);if(!url)return;
-  var div=document.createElement('div');div.className='media-item';if(extra){div.style.height='auto';div.style.paddingBottom='30px';}
-  if(mtype&&mtype.startsWith('video/')){var v=document.createElement('video');v.src=url;v.controls=true;v.style.width='100%';v.style.height=extra?'120px':'100%';v.style.objectFit='cover';div.appendChild(v);}
-  else{var img=document.createElement('img');img.src=url;img.style.width='100%';img.style.height=extra?'120px':'100%';img.style.objectFit='cover';div.appendChild(img);}
-  if(showDel){var btn=document.createElement('button');btn.className='delete-media-btn';btn.innerHTML='<i class="fa-solid fa-trash"></i>';btn.onclick=function(){deleteMedia(mid);};div.appendChild(btn);}
-  if(extra)div.insertAdjacentHTML('beforeend',extra);container.appendChild(div);
+
+// ===== NOTIFICATIONS =====
+async function loadNotifications(){
+  var cu=getSession();if(!cu)return;
+  var nl=document.getElementById('notifications-list');if(!nl)return;
+  nl.innerHTML='<p class="empty-msg">Chargement...</p>';
+  var notifs=await fbGetNotifications(cu.id);
+  if(notifs.length===0){nl.innerHTML='<p class="empty-msg">Aucune notification</p>';return;}
+  nl.innerHTML='';
+  for(var i=0;i<notifs.length;i++){var n=notifs[i];
+    nl.innerHTML+='<div class="notif-item'+(n.read?'':' unread')+'"><div class="notif-icon"><i class="fa-solid '+(n.icon||'fa-bell')+'"></i></div><div class="notif-content"><p>'+n.text+'</p><small>'+new Date(n.timestamp).toLocaleDateString('fr')+'</small></div></div>';
+  }
 }
-window.renderMyGallery=async function(){
-  var cu=getSession();var allMedia=await fbGetAllMedia();
-  var c=document.getElementById('my-gallery-container');if(!c)return;c.innerHTML='';
-  for(var i=0;i<allMedia.length;i++){if(allMedia[i].userId===cu.id)await renderMediaItem(allMedia[i].id,allMedia[i].type,c,true,null);}
+
+// ===== STORIES (basic) =====
+window.openStoryCreator=function(){document.getElementById('story-creator').classList.remove('hidden');initStoryCreator();};
+function initStoryCreator(){
+  var colors=['#0d6e4e','#1abc9c','#d4a017','#e63946','#6366f1','#ec4899','#000'];
+  var cp=document.getElementById('sc-colors');if(cp){cp.innerHTML='';
+    colors.forEach(function(c,i){cp.innerHTML+='<div style="background:'+c+'"'+(i===0?' class="active"':'')+' onclick="pickStoryColor(this,\''+c+'\')"></div>';});
+  }
+  window._storyColor=colors[0];window._storyType='text';
+}
+window.pickStoryColor=function(el,color){
+  window._storyColor=color;
+  document.querySelectorAll('#sc-colors div').forEach(function(d){d.classList.remove('active');});
+  el.classList.add('active');
 };
-window.deleteMedia=async function(mid){
-  if(!confirm('Supprimer ?'))return;await fbDeleteFile(mid);await fbDeleteMedia(mid);
-  var cu=getSession();if(cu&&cu.role==='admin')await loadAdminData();else await renderMyGallery();
+window.setStoryType=function(type){
+  window._storyType=type;
+  document.querySelectorAll('.story-type-tabs button').forEach(function(b){b.classList.remove('active');});
+  event.target.closest('button').classList.add('active');
+  var ta=document.getElementById('sc-text-area'),ma=document.getElementById('sc-media-area');
+  if(type==='text'){if(ta)ta.classList.remove('hidden');if(ma)ma.classList.add('hidden');}
+  else{if(ta)ta.classList.add('hidden');if(ma)ma.classList.remove('hidden');}
 };
+window.publishStory=async function(){
+  var cu=getSession();if(!cu)return;
+  var data={userId:cu.id,userName:cu.name,userAvatar:cu.avatar||'',type:window._storyType||'text',
+    createdAt:new Date().toISOString(),expiresAt:new Date(Date.now()+86400000).toISOString(),views:[],replies:[]};
+  if(data.type==='text'){
+    data.text=(document.getElementById('sc-text')||{}).value||'';
+    data.bgColor=window._storyColor||'#0d6e4e';
+    if(!data.text){alert('Écrivez quelque chose.');return;}
+  }else{
+    var fi=document.getElementById('sc-file');
+    if(!fi||!fi.files||!fi.files[0]){alert('Choisissez un fichier.');return;}
+    var mid='story_'+Date.now();data.mediaUrl=await fbUploadFile(mid,fi.files[0]);data.mediaType=fi.files[0].type;
+  }
+  await fbCreateStory(data);closeModal('story-creator');
+  alert('Story publiée !');
+};
+window.closeStoryViewer=function(){document.getElementById('story-viewer').classList.add('hidden');};
+window.handleStoryClick=function(e){};
+window.sendStoryReply=function(){};
+
+// ===== ADMIN =====
 window.loadAdminData=async function(){
-  var users=await fbGetAllUsers();var allMedia=await fbGetAllMedia();await updateStats();
-  var tb=document.getElementById('admin-table-body');if(!tb)return;tb.innerHTML='';
+  var users=await fbGetAllUsers();
+  // Stats
+  var as=document.getElementById('admin-stats');
+  if(as){var tc=0,sc=0,pc=0;
+    for(var i=0;i<users.length;i++){if(users[i].role==='enseignant')tc++;else if(users[i].role!=='admin')sc++;if(users[i].paymentStatus==='awaiting')pc++;}
+    as.innerHTML='<div class="stat-card"><i class="fa-solid fa-users"></i><div><span class="stat-num">'+(tc+sc)+'</span><span class="stat-label">Total</span></div></div><div class="stat-card"><i class="fa-solid fa-chalkboard-user"></i><div><span class="stat-num">'+tc+'</span><span class="stat-label">Enseignants</span></div></div><div class="stat-card"><i class="fa-solid fa-user-graduate"></i><div><span class="stat-num">'+sc+'</span><span class="stat-label">Apprenants</span></div></div><div class="stat-card"><i class="fa-solid fa-wallet"></i><div><span class="stat-num">'+pc+'</span><span class="stat-label">Paiements en attente</span></div></div>';
+  }
+  // Table
+  var tb=document.getElementById('admin-tbody');if(!tb)return;tb.innerHTML='';
   for(var i=0;i<users.length;i++){var u=users[i];if(u.role==='admin')continue;
-    var sb='';if(u.status==='active')sb='<span class="status-badge status-active">Actif</span>';else if(u.status==='pending')sb='<span class="status-badge status-pending">En attente</span>';else sb='<span class="status-badge status-blocked">Bloqué</span>';
-    var payInfo='—';if(u.role==='enseignant'){if(u.paymentStatus==='awaiting')payInfo='<span class="status-badge" style="background:#fff3cd;color:#856404;">💰 Signalé</span>';else if(u.paymentStatus==='expired')payInfo='<span class="status-badge status-blocked">⏰ Expiré</span>';else if(u.paymentDate)payInfo='<span class="status-badge status-active">✅ Payé</span>';else payInfo='<span class="status-badge status-pending">Non payé</span>';}
-    var btns='';if(u.role==='enseignant'&&u.paymentStatus==='awaiting')btns+='<button class="btn btn-success" style="padding:5px 10px;font-size:.8rem;margin:2px;" onclick="adminValidatePayment(\''+u.id+'\')"><i class="fa-solid fa-check"></i> Valider paiement</button>';
-    if(u.status!=='active')btns+='<button class="btn btn-success" style="padding:5px 10px;font-size:.8rem;margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'active\')">Activer</button>';
-    if(u.status!=='blocked')btns+='<button class="btn btn-danger" style="padding:5px 10px;font-size:.8rem;margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'blocked\')">Bloquer</button>';
-    btns+='<button class="btn" style="padding:5px 10px;font-size:.8rem;margin:2px;background:#6c757d;color:white;" onclick="adminDeleteUser(\''+u.id+'\')"><i class="fa-solid fa-trash"></i> Supprimer</button>';
-    var tr=document.createElement('tr');tr.innerHTML='<td>'+u.name+'</td><td>'+(u.role||'').toUpperCase()+'</td><td>'+u.phone+'</td><td>'+(u.city||'')+'</td><td>'+sb+'</td><td>'+payInfo+'</td><td>'+btns+'</td>';tb.appendChild(tr);}
-  var gb=document.getElementById('admin-gallery-body');if(!gb)return;gb.innerHTML='';
-  if(allMedia.length===0){gb.innerHTML='<p>Aucun média.</p>';return;}
-  for(var m=0;m<allMedia.length;m++){var media=allMedia[m],own='?';for(var j=0;j<users.length;j++){if(users[j].id===media.userId)own=users[j].name;}var ex='<p style="font-size:.7rem;color:white;text-align:center;padding:3px;position:absolute;bottom:0;width:100%;background:rgba(0,0,0,.5);">'+own+'</p>';await renderMediaItem(media.id,media.type,gb,true,ex);}
+    var sb='';if(u.status==='active')sb='<span class="status-badge status-active">Actif</span>';
+    else if(u.status==='pending')sb='<span class="status-badge status-pending">En attente</span>';
+    else sb='<span class="status-badge status-blocked">Bloqué</span>';
+    var pay='—';
+    if(u.role==='enseignant'){
+      if(u.paymentStatus==='awaiting')pay='<span class="status-badge status-pending">💰 Signalé</span>';
+      else if(u.paymentStatus==='expired')pay='<span class="status-badge status-blocked">Expiré</span>';
+      else if(u.paymentDate)pay='<span class="status-badge status-active">✅ Payé</span>';
+      else pay='<span class="status-badge status-pending">Non payé</span>';
+    }
+    var btns='';
+    if(u.paymentStatus==='awaiting')btns+='<button class="btn-success" style="margin:2px;" onclick="adminValidatePayment(\''+u.id+'\')">✅ Valider</button>';
+    if(u.status!=='active')btns+='<button class="btn-success" style="margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'active\')">Activer</button>';
+    if(u.status!=='blocked')btns+='<button class="btn-danger" style="margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'blocked\')">Bloquer</button>';
+    btns+='<button class="btn-danger" style="margin:2px;opacity:.7;" onclick="adminDeleteUser(\''+u.id+'\')"><i class="fa-solid fa-trash"></i></button>';
+    tb.innerHTML+='<tr><td>'+u.name+'</td><td>'+(u.role||'').toUpperCase()+'</td><td>'+u.phone+'</td><td>'+(u.city||'')+'</td><td>'+sb+'</td><td>'+pay+'</td><td>'+btns+'</td></tr>';
+  }
 };
-window.adminSetStatus=async function(uid,ns){await fbSetUser(uid,{status:ns});await loadAdminData();};
-window.adminValidatePayment=async function(uid){await fbSetUser(uid,{paymentStatus:'paid',paymentDate:new Date().toISOString(),status:'active'});alert('Paiement validé ! Accès 30 jours.');await loadAdminData();};
-window.adminDeleteUser=async function(uid){if(!confirm('Supprimer ce compte ?'))return;var allMedia=await fbGetAllMedia();for(var m=0;m<allMedia.length;m++){if(allMedia[m].userId===uid){await fbDeleteFile(allMedia[m].id);await fbDeleteMedia(allMedia[m].id);}}await fbDeleteUser(uid);alert('Compte supprimé.');await loadAdminData();};
+window.adminSetStatus=async function(uid,s){await fbSetUser(uid,{status:s});await loadAdminData();};
+window.adminValidatePayment=async function(uid){await fbSetUser(uid,{paymentStatus:'paid',paymentDate:new Date().toISOString(),status:'active'});alert('Paiement validé !');await loadAdminData();};
+window.adminDeleteUser=async function(uid){if(!confirm('Supprimer ce compte ?'))return;await fbDeleteUser(uid);alert('Supprimé.');await loadAdminData();};
+
+// Close dropdowns on outside click
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.nav-profile-wrap'))closeDD();
+});
+
