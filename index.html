@@ -6,7 +6,7 @@
     <title>Tilawah Link Academy — Plateforme Éducative</title>
     <meta name="description" content="Tilawah Link Academy : plateforme éducative moderne. Trouvez des enseignants, apprenez et enseignez.">
     <script>document.write('<link rel="stylesheet" href="styles.css?v='+Date.now()+'">');</script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
@@ -18,17 +18,15 @@
     <div class="auth-bg">
         <div class="auth-card">
             <div class="auth-logo"><div class="logo-icon"><i class="fa-solid fa-book-quran"></i></div><h1>Tilawah Link Academy</h1><p class="auth-tagline">Apprendre. Enseigner. Connecter.</p></div>
-            <!-- LOGIN -->
             <div id="auth-login">
                 <h2>Connexion</h2>
                 <div class="input-group"><i class="fa-solid fa-phone"></i><input type="text" id="login-id" placeholder="Numéro de téléphone (+221...)"></div>
                 <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="login-pass" placeholder="Mot de passe"></div>
-                <button class="btn-main w-full" id="btn-login" onclick="appLogin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Se connecter</button>
+                <button class="btn-main w-full" onclick="appLogin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Se connecter</button>
                 <div class="auth-links"><a href="#" onclick="switchAuth('forgot');return false">Mot de passe oublié ?</a></div>
                 <div class="auth-divider"><span>ou</span></div>
                 <p class="auth-switch">Pas encore de compte ? <a href="#" onclick="switchAuth('register');return false">Créer un compte</a></p>
             </div>
-            <!-- REGISTER -->
             <div id="auth-register" class="hidden">
                 <h2>Inscription</h2>
                 <div class="role-toggle"><button class="role-opt active" data-role="apprenant" onclick="selectRole('apprenant')"><i class="fa-solid fa-user-graduate"></i> Apprenant</button><button class="role-opt" data-role="enseignant" onclick="selectRole('enseignant')"><i class="fa-solid fa-chalkboard-user"></i> Enseignant</button><button class="role-opt" data-role="both" onclick="selectRole('both')"><i class="fa-solid fa-arrows-rotate"></i> Les deux</button></div>
@@ -37,9 +35,9 @@
                 <div class="input-group"><i class="fa-solid fa-phone"></i><input type="tel" id="reg-phone" placeholder="Téléphone (+221...)"></div>
                 <div class="input-group"><i class="fa-solid fa-city"></i><input type="text" id="reg-city" placeholder="Ville"></div>
                 <div id="reg-teacher-opts" class="hidden">
-                    <label class="field-label">Catégories d'enseignement</label>
+                    <label class="field-label">Catégories</label>
                     <div class="chip-grid" id="reg-categories-grid"></div>
-                    <label class="field-label mt-2">Disciplines spécifiques</label>
+                    <label class="field-label mt-2">Disciplines</label>
                     <div class="chip-grid" id="reg-disciplines-grid"></div>
                     <label class="field-label mt-2">Public visé</label>
                     <div class="chip-grid"><label class="chip-check"><input type="checkbox" class="reg-public" value="Enfants"> Enfants</label><label class="chip-check"><input type="checkbox" class="reg-public" value="Adultes"> Adultes</label><label class="chip-check"><input type="checkbox" class="reg-public" value="Femmes"> Femmes</label><label class="chip-check"><input type="checkbox" class="reg-public" value="Hommes"> Hommes</label></div>
@@ -48,7 +46,6 @@
                 <button class="btn-main w-full" onclick="appRegister()"><i class="fa-solid fa-user-plus"></i> Créer mon compte</button>
                 <p class="auth-switch mt-2">Déjà inscrit ? <a href="#" onclick="switchAuth('login');return false">Se connecter</a></p>
             </div>
-            <!-- FORGOT -->
             <div id="auth-forgot" class="hidden">
                 <h2>Récupération</h2>
                 <p class="text-muted mb-2">Entrez votre numéro pour réinitialiser.</p>
@@ -56,7 +53,6 @@
                 <button class="btn-main w-full" onclick="appForgotPass()">Réinitialiser</button>
                 <p class="auth-switch mt-2"><a href="#" onclick="switchAuth('login');return false"><i class="fa-solid fa-arrow-left"></i> Retour</a></p>
             </div>
-            <!-- FORCE PASS -->
             <div id="auth-force-pass" class="hidden">
                 <h2>Nouveau mot de passe</h2>
                 <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="force-new-pass" placeholder="Nouveau mot de passe"></div>
@@ -73,19 +69,19 @@
             <div id="pay-screen-pay">
                 <div class="payment-icon"><i class="fa-solid fa-wallet"></i></div>
                 <h2 id="pay-title">Activation de votre compte</h2>
-                <p class="mt-1" id="pay-msg">Pour accéder à la plateforme, effectuez votre paiement de <strong>1 000 FCFA</strong> via Wave.</p>
+                <p class="mt-1" id="pay-msg">Effectuez votre paiement de <strong>1 000 FCFA</strong> via Wave.</p>
                 <div class="payment-details">
                     <p>📱 Envoyez <strong>1 000 FCFA</strong> via Wave au :</p>
                     <h1 class="wave-number">+221 77 459 98 35</h1>
-                    <a href="https://pay.wave.com/m/M_OfMBJ3d3dT/c/SN/?amount=1000" target="_blank" class="btn-wave w-full"><i class="fa-solid fa-money-bill-wave"></i> Ouvrir Wave pour payer</a>
+                    <a href="https://pay.wave.com/m/M_OfMBJ3d3dT/c/SN/?amount=1000" target="_blank" class="btn-wave w-full"><i class="fa-solid fa-money-bill-wave"></i> Ouvrir Wave</a>
                 </div>
-                <button class="btn-main w-full mt-2" onclick="confirmPayment()"><i class="fa-solid fa-check-circle"></i> J'ai effectué le paiement</button>
+                <button class="btn-main w-full mt-2" onclick="confirmPayment()"><i class="fa-solid fa-check-circle"></i> J'ai payé</button>
                 <button class="btn-ghost w-full mt-1" onclick="appLogout()">Se déconnecter</button>
             </div>
             <div id="pay-screen-waiting" class="hidden">
                 <div class="payment-icon waiting"><i class="fa-solid fa-hourglass-half"></i></div>
                 <h2>Paiement en vérification</h2>
-                <p class="mt-1">Votre paiement a été signalé. L'administrateur va vérifier et valider votre compte.</p>
+                <p class="mt-1">L'administrateur va vérifier et valider votre compte.</p>
                 <button class="btn-ghost w-full mt-2" onclick="appLogout()">Se déconnecter</button>
             </div>
         </div>
@@ -97,19 +93,21 @@
     <!-- NAVBAR -->
     <nav class="top-nav">
         <div class="nav-inner">
-            <a class="nav-logo" href="#" onclick="goToView('home');return false"><div class="logo-icon-sm"><i class="fa-solid fa-book-quran"></i></div><span>Tilawah Link Academy</span></a>
-            <div class="nav-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="global-search" placeholder="Rechercher enseignants, disciplines..." onkeyup="handleGlobalSearch(event)"></div>
+            <a class="nav-logo" href="#" onclick="goToView('home');return false"><div class="logo-icon-sm"><i class="fa-solid fa-book-quran"></i></div><span>TLA</span></a>
+            <div class="nav-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="global-search" placeholder="Rechercher..." onkeyup="handleGlobalSearch(event)"></div>
             <div class="nav-actions">
                 <button class="nav-icon-btn" onclick="goToView('home')" title="Accueil" data-view="home"><i class="fa-solid fa-house"></i></button>
                 <button class="nav-icon-btn" onclick="goToView('categories')" title="Catégories" data-view="categories"><i class="fa-solid fa-grid-2"></i></button>
                 <button class="nav-icon-btn" onclick="goToView('messages')" title="Messages" data-view="messages"><i class="fa-solid fa-comment-dots"></i><span class="badge-count hidden" id="msg-badge">0</span></button>
                 <button class="nav-icon-btn" onclick="goToView('notifications')" title="Notifications" data-view="notifications"><i class="fa-solid fa-bell"></i><span class="badge-count hidden" id="notif-badge">0</span></button>
+                <button class="nav-icon-btn" onclick="toggleDarkMode()" title="Mode sombre" id="dark-mode-btn"><i class="fa-solid fa-moon"></i></button>
                 <div class="nav-profile-wrap">
-                    <button class="nav-avatar-btn" onclick="toggleProfileMenu()"><img id="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=6C5CE7&color=fff&size=40" alt=""><span class="online-dot"></span></button>
+                    <button class="nav-avatar-btn" onclick="toggleProfileMenu()"><img id="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=0d6e4e&color=fff&size=40" alt=""><span class="online-dot"></span></button>
                     <div class="profile-dropdown hidden" id="profile-dropdown">
                         <div class="dropdown-header"><img id="dd-avatar" src=""><div><strong id="dd-name"></strong><small id="dd-role"></small></div></div>
                         <div class="dropdown-divider"></div>
                         <a href="#" onclick="goToView('profile');closeDD();return false"><i class="fa-solid fa-user"></i> Mon Profil</a>
+                        <a href="#" onclick="goToView('favorites');closeDD();return false"><i class="fa-solid fa-heart"></i> Favoris</a>
                         <a href="#" onclick="toggleRole();closeDD();return false" id="dd-switch-role"><i class="fa-solid fa-arrows-rotate"></i> <span id="dd-switch-label">Passer Enseignant</span></a>
                         <a href="#" onclick="goToView('admin');closeDD();return false" id="dd-admin-link" class="hidden"><i class="fa-solid fa-shield"></i> Administration</a>
                         <div class="dropdown-divider"></div>
@@ -120,64 +118,69 @@
             <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fa-solid fa-bars"></i></button>
         </div>
     </nav>
-    <!-- Mobile Menu -->
     <div class="mobile-menu hidden" id="mobile-menu">
         <a href="#" onclick="goToView('home');closeMM();return false"><i class="fa-solid fa-house"></i> Accueil</a>
         <a href="#" onclick="goToView('categories');closeMM();return false"><i class="fa-solid fa-grid-2"></i> Catégories</a>
-        <a href="#" onclick="goToView('teachers');closeMM();return false"><i class="fa-solid fa-chalkboard-user"></i> Enseignants</a>
+        <a href="#" onclick="goToView('feed');closeMM();return false"><i class="fa-solid fa-newspaper"></i> Publications</a>
         <a href="#" onclick="goToView('messages');closeMM();return false"><i class="fa-solid fa-comment-dots"></i> Messages</a>
+        <a href="#" onclick="goToView('favorites');closeMM();return false"><i class="fa-solid fa-heart"></i> Favoris</a>
         <a href="#" onclick="goToView('profile');closeMM();return false"><i class="fa-solid fa-user"></i> Mon Profil</a>
+        <a href="#" onclick="toggleDarkMode();closeMM();return false"><i class="fa-solid fa-moon"></i> Mode sombre</a>
         <a href="#" onclick="appLogout();return false" class="text-danger"><i class="fa-solid fa-right-from-bracket"></i> Déconnexion</a>
     </div>
 
     <main class="main-content">
-        <!-- HOME VIEW -->
+        <!-- HOME -->
         <div id="v-home" class="view-page">
-            <!-- Stories Bar -->
             <div class="stories-bar" id="stories-bar">
                 <div class="story-add" onclick="openStoryCreator()"><div class="story-circle add-circle"><i class="fa-solid fa-plus"></i></div><span>Ma story</span></div>
                 <div class="stories-scroll" id="stories-scroll"></div>
             </div>
-            <!-- Hero -->
             <section class="hero-section">
                 <div class="hero-inner">
                     <h1 id="hero-welcome">Bienvenue sur <span class="gradient-text">Tilawah Link Academy</span></h1>
-                    <p class="hero-sub">La plateforme éducative qui connecte enseignants et apprenants dans toutes les disciplines.</p>
+                    <p class="hero-sub">La plateforme éducative qui connecte enseignants et apprenants.</p>
                     <div class="hero-actions">
                         <button class="btn-main btn-lg" onclick="goToView('teachers')"><i class="fa-solid fa-search"></i> Trouver un enseignant</button>
-                        <button class="btn-outline-main btn-lg" onclick="goToView('categories')"><i class="fa-solid fa-grid-2"></i> Explorer les catégories</button>
+                        <button class="btn-outline-main btn-lg" onclick="goToView('categories')"><i class="fa-solid fa-grid-2"></i> Catégories</button>
                     </div>
-                    <div class="hero-stats" id="hero-stats"></div>
                 </div>
             </section>
-            <!-- Categories Preview -->
+            <!-- Feed preview -->
             <section class="section">
-                <div class="section-header"><h2>Explorer par catégorie</h2><a href="#" onclick="goToView('categories');return false">Voir tout <i class="fa-solid fa-arrow-right"></i></a></div>
-                <div class="categories-grid" id="home-categories"></div>
+                <div class="section-header"><h2>Fil d'actualité</h2><a href="#" onclick="goToView('feed');return false">Voir tout <i class="fa-solid fa-arrow-right"></i></a></div>
+                <div id="home-feed"></div>
             </section>
-            <!-- Featured Teachers -->
             <section class="section">
                 <div class="section-header"><h2>Enseignants à découvrir</h2><a href="#" onclick="goToView('teachers');return false">Voir tout <i class="fa-solid fa-arrow-right"></i></a></div>
                 <div class="teachers-grid" id="home-teachers"></div>
             </section>
-            <!-- Suggestions -->
-            <section class="section" id="suggestions-section">
-                <div class="section-header"><h2>Suggestions pour vous</h2></div>
-                <div class="suggestions-scroll" id="suggestions-container"></div>
-            </section>
         </div>
 
-        <!-- CATEGORIES VIEW -->
+        <!-- FEED -->
+        <div id="v-feed" class="view-page hidden">
+            <div class="page-header"><h1><i class="fa-solid fa-newspaper"></i> Publications</h1></div>
+            <div class="post-composer">
+                <div class="composer-header"><img id="composer-avatar" src="" class="composer-av"><textarea id="post-text" placeholder="Quoi de neuf ? Partagez quelque chose..."></textarea></div>
+                <div class="composer-actions">
+                    <label class="composer-btn"><i class="fa-solid fa-image"></i> Photo<input type="file" id="post-media" accept="image/*,video/*" class="hidden" onchange="previewPostMedia(this)"></label>
+                    <button class="btn-main btn-sm" onclick="publishPost()"><i class="fa-solid fa-paper-plane"></i> Publier</button>
+                </div>
+                <div id="post-media-preview" class="hidden"></div>
+            </div>
+            <div id="feed-posts"></div>
+        </div>
+
+        <!-- CATEGORIES -->
         <div id="v-categories" class="view-page hidden">
-            <div class="page-header"><h1><i class="fa-solid fa-grid-2"></i> Catégories</h1><p>Explorez toutes les disciplines disponibles</p></div>
+            <div class="page-header"><h1><i class="fa-solid fa-grid-2"></i> Catégories</h1><p>Explorez toutes les disciplines</p></div>
             <div class="categories-full-grid" id="categories-full"></div>
         </div>
 
-        <!-- TEACHERS VIEW -->
+        <!-- TEACHERS -->
         <div id="v-teachers" class="view-page hidden">
-            <div class="page-header"><h1><i class="fa-solid fa-chalkboard-user"></i> Enseignants</h1><p>Trouvez le professeur qui vous correspond</p></div>
+            <div class="page-header"><h1><i class="fa-solid fa-chalkboard-user"></i> Enseignants</h1></div>
             <div class="filters-bar">
-                <div class="filter-chip-group" id="active-filters"></div>
                 <div class="filters-row">
                     <div class="filter-input"><i class="fa-solid fa-search"></i><input type="text" id="t-search" placeholder="Nom ou ville..." onkeyup="renderTeachers()"></div>
                     <select id="t-category" onchange="updateDisciplineFilter();renderTeachers()"><option value="">Toutes catégories</option></select>
@@ -188,7 +191,17 @@
             <div class="teachers-grid" id="teachers-list"></div>
         </div>
 
-        <!-- MESSAGES VIEW -->
+        <!-- STORIES VIEW -->
+        <div id="v-stories" class="view-page hidden">
+            <div class="page-header"><h1><i class="fa-solid fa-circle-play"></i> Stories</h1></div>
+            <div class="stories-bar stories-bar-full" id="stories-bar-full">
+                <div class="story-add" onclick="openStoryCreator()"><div class="story-circle add-circle"><i class="fa-solid fa-plus"></i></div><span>Créer</span></div>
+                <div class="stories-scroll" id="stories-scroll-full"></div>
+            </div>
+            <div id="stories-feed"></div>
+        </div>
+
+        <!-- MESSAGES -->
         <div id="v-messages" class="view-page hidden">
             <div class="messaging-layout">
                 <div class="conv-sidebar" id="conv-sidebar">
@@ -196,18 +209,28 @@
                     <div class="conv-list" id="conv-list"><p class="empty-msg">Aucune conversation</p></div>
                 </div>
                 <div class="chat-area" id="chat-area">
-                    <div class="chat-placeholder"><i class="fa-solid fa-comments"></i><h3>Sélectionnez une conversation</h3><p>Choisissez une discussion ou envoyez un message à un enseignant</p></div>
+                    <div class="chat-placeholder"><i class="fa-solid fa-comments"></i><h3>Sélectionnez une conversation</h3></div>
                 </div>
             </div>
         </div>
 
-        <!-- NOTIFICATIONS VIEW -->
+        <!-- NOTIFICATIONS -->
         <div id="v-notifications" class="view-page hidden">
             <div class="page-header"><h1><i class="fa-solid fa-bell"></i> Notifications</h1></div>
             <div class="notifications-list" id="notifications-list"></div>
         </div>
 
-        <!-- PROFILE VIEW -->
+        <!-- FAVORITES -->
+        <div id="v-favorites" class="view-page hidden">
+            <div class="page-header"><h1><i class="fa-solid fa-heart"></i> Favoris</h1></div>
+            <div class="fav-tabs">
+                <button class="fav-tab active" onclick="switchFavTab('profiles')">Profils</button>
+                <button class="fav-tab" onclick="switchFavTab('posts')">Publications</button>
+            </div>
+            <div id="fav-content"></div>
+        </div>
+
+        <!-- PROFILE -->
         <div id="v-profile" class="view-page hidden">
             <div class="profile-layout">
                 <div class="profile-cover">
@@ -219,47 +242,41 @@
                         <div class="profile-stats-row">
                             <div class="prof-stat"><strong id="prof-followers">0</strong><span>Abonnés</span></div>
                             <div class="prof-stat"><strong id="prof-following">0</strong><span>Abonnements</span></div>
+                            <div class="prof-stat"><strong id="prof-posts-count">0</strong><span>Publications</span></div>
                         </div>
                     </div>
                 </div>
                 <div class="profile-body">
-                    <div class="profile-section">
-                        <h3>Informations</h3>
+                    <div class="profile-section"><h3>Informations</h3>
                         <div class="input-group"><i class="fa-solid fa-user"></i><input type="text" id="prof-name-input" placeholder="Nom complet"></div>
                         <div class="input-group"><i class="fa-solid fa-city"></i><input type="text" id="prof-city-input" placeholder="Ville"></div>
                     </div>
-                    <!-- Role Switch -->
-                    <div class="profile-section">
-                        <h3>Mes rôles</h3>
-                        <div class="roles-manager" id="roles-manager"></div>
-                    </div>
-                    <!-- Teacher specific -->
+                    <div class="profile-section"><h3>Mes rôles</h3><div class="roles-manager" id="roles-manager"></div></div>
                     <div id="prof-teacher-section" class="hidden">
-                        <div class="profile-section">
-                            <h3>Mes catégories & disciplines</h3>
-                            <div class="chip-grid" id="prof-categories-grid"></div>
-                            <div class="chip-grid mt-2" id="prof-disciplines-grid"></div>
-                        </div>
-                        <div class="profile-section">
-                            <h3>Public visé</h3>
-                            <div class="chip-grid" id="prof-publics-grid"></div>
-                        </div>
-                        <div class="profile-section">
-                            <h3>Présentation</h3>
-                            <textarea id="prof-bio" rows="4" placeholder="Décrivez votre parcours, vos méthodes..."></textarea>
-                        </div>
-                        <div class="profile-section">
-                            <h3>Galerie</h3>
+                        <div class="profile-section"><h3>Catégories & disciplines</h3><div class="chip-grid" id="prof-categories-grid"></div><div class="chip-grid mt-2" id="prof-disciplines-grid"></div></div>
+                        <div class="profile-section"><h3>Public visé</h3><div class="chip-grid" id="prof-publics-grid"></div></div>
+                        <div class="profile-section"><h3>Présentation</h3><textarea id="prof-bio" rows="4" placeholder="Décrivez votre parcours..."></textarea></div>
+                        <div class="profile-section"><h3>Galerie</h3>
                             <div class="gallery-upload-row"><input type="file" id="gallery-upload" accept="image/*,video/*"><button class="btn-sm" onclick="uploadGalleryMedia()"><i class="fa-solid fa-cloud-upload"></i> Ajouter</button></div>
                             <div class="gallery-grid" id="prof-gallery"></div>
                         </div>
                     </div>
                     <button class="btn-main w-full mt-2" onclick="saveProfile()"><i class="fa-solid fa-save"></i> Enregistrer</button>
                 </div>
+                <!-- My Posts -->
+                <div class="profile-posts-section mt-3">
+                    <h3><i class="fa-solid fa-newspaper"></i> Mes publications</h3>
+                    <div id="my-posts"></div>
+                </div>
             </div>
         </div>
 
-        <!-- TEACHER DETAIL MODAL -->
+        <!-- USER PROFILE (other user) -->
+        <div id="v-user-profile" class="view-page hidden">
+            <div class="profile-layout" id="user-profile-content"></div>
+        </div>
+
+        <!-- TEACHER MODAL -->
         <div id="teacher-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('teacher-modal')">
             <div class="modal-card" id="teacher-modal-body"></div>
         </div>
@@ -282,35 +299,37 @@
                     <button onclick="setStoryType('video')"><i class="fa-solid fa-video"></i> Vidéo</button>
                 </div>
                 <div id="sc-text-area"><textarea id="sc-text" placeholder="Écrivez votre story..." rows="4"></textarea>
-                    <label class="field-label">Couleur de fond</label>
-                    <div class="color-picks" id="sc-colors"></div>
+                    <label class="field-label">Couleur de fond</label><div class="color-picks" id="sc-colors"></div>
                 </div>
                 <div id="sc-media-area" class="hidden"><input type="file" id="sc-file" accept="image/*,video/*"><div id="sc-preview"></div></div>
-                <select id="sc-category"><option value="">Catégorie (optionnel)</option></select>
                 <button class="btn-main w-full mt-2" onclick="publishStory()"><i class="fa-solid fa-paper-plane"></i> Publier</button>
             </div>
         </div>
 
-        <!-- ADMIN VIEW -->
+        <!-- COMMENTS MODAL -->
+        <div id="comments-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('comments-modal')">
+            <div class="modal-card">
+                <div class="modal-header"><h2>Commentaires</h2><button onclick="closeModal('comments-modal')"><i class="fa-solid fa-xmark"></i></button></div>
+                <div id="comments-list"></div>
+                <div class="comment-input-row"><input type="text" id="comment-text" placeholder="Votre commentaire..." class="comment-input"><button class="btn-sm" onclick="postComment()"><i class="fa-solid fa-paper-plane"></i></button></div>
+            </div>
+        </div>
+
+        <!-- ADMIN -->
         <div id="v-admin" class="view-page hidden">
             <div class="page-header admin-header-bg"><h1><i class="fa-solid fa-shield"></i> Administration</h1><button class="btn-outline-light" onclick="goToView('home')"><i class="fa-solid fa-home"></i> Retour</button></div>
             <div class="admin-stats" id="admin-stats"></div>
-            <div class="admin-section">
-                <h2>Gestion des Utilisateurs</h2>
+            <div class="admin-section"><h2>Gestion des Utilisateurs</h2>
                 <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Nom</th><th>Rôle</th><th>Téléphone</th><th>Ville</th><th>Statut</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="admin-tbody"></tbody></table></div>
-            </div>
-            <div class="admin-section">
-                <h2>Modération des Médias</h2>
-                <div class="gallery-grid" id="admin-gallery"></div>
             </div>
         </div>
     </main>
 
-    <!-- MOBILE BOTTOM NAV -->
+    <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
         <button onclick="goToView('home')" data-view="home" class="active"><i class="fa-solid fa-house"></i><span>Accueil</span></button>
-        <button onclick="goToView('categories')" data-view="categories"><i class="fa-solid fa-grid-2"></i><span>Explorer</span></button>
-        <button onclick="openStoryCreator()" class="bottom-nav-add"><i class="fa-solid fa-plus"></i></button>
+        <button onclick="goToView('feed')" data-view="feed"><i class="fa-solid fa-newspaper"></i><span>Feed</span></button>
+        <button onclick="goToView('stories')" class="bottom-nav-add" data-view="stories"><i class="fa-solid fa-circle-play"></i></button>
         <button onclick="goToView('messages')" data-view="messages"><i class="fa-solid fa-comment-dots"></i><span>Messages</span><span class="badge-count hidden" id="msg-badge-mobile">0</span></button>
         <button onclick="goToView('profile')" data-view="profile"><i class="fa-solid fa-user"></i><span>Profil</span></button>
     </nav>

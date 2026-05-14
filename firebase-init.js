@@ -220,6 +220,55 @@ async function fbSetOnlineStatus(userId,isOnline){
   await db.collection('users').doc(userId).update({isOnline:isOnline,lastSeen:new Date().toISOString()});
 }
 
+// ===== POSTS =====
+async function fbCreatePost(data){
+  var ref=db.collection('posts').doc();data.id=ref.id;await ref.set(data);return data;
+}
+async function fbGetPosts(limit){
+  var snap=await db.collection('posts').orderBy('createdAt','desc').limit(limit||50).get();
+  var arr=[];snap.forEach(function(d){arr.push(d.data());});return arr;
+}
+async function fbGetUserPosts(userId){
+  var snap=await db.collection('posts').where('userId','==',userId).orderBy('createdAt','desc').get();
+  var arr=[];snap.forEach(function(d){arr.push(d.data());});return arr;
+}
+async function fbDeletePost(postId){await db.collection('posts').doc(postId).delete();}
+async function fbLikePost(postId,userId){
+  await db.collection('posts').doc(postId).update({likes:firebase.firestore.FieldValue.arrayUnion(userId)});
+}
+async function fbUnlikePost(postId,userId){
+  await db.collection('posts').doc(postId).update({likes:firebase.firestore.FieldValue.arrayRemove(userId)});
+}
+
+// ===== COMMENTS =====
+async function fbAddComment(postId,comment){
+  var ref=db.collection('posts').doc(postId).collection('comments').doc();
+  comment.id=ref.id;await ref.set(comment);return comment;
+}
+async function fbGetComments(postId){
+  var snap=await db.collection('posts').doc(postId).collection('comments').orderBy('createdAt','asc').get();
+  var arr=[];snap.forEach(function(d){arr.push(d.data());});return arr;
+}
+async function fbDeleteComment(postId,commentId){
+  await db.collection('posts').doc(postId).collection('comments').doc(commentId).delete();
+}
+
+// ===== FAVORITES =====
+async function fbAddFavorite(userId,item){
+  await db.collection('users').doc(userId).collection('favorites').doc(item.id).set(item);
+}
+async function fbRemoveFavorite(userId,itemId){
+  await db.collection('users').doc(userId).collection('favorites').doc(itemId).delete();
+}
+async function fbGetFavorites(userId){
+  var snap=await db.collection('users').doc(userId).collection('favorites').get();
+  var arr=[];snap.forEach(function(d){arr.push(d.data());});return arr;
+}
+async function fbIsFavorite(userId,itemId){
+  var doc=await db.collection('users').doc(userId).collection('favorites').doc(itemId).get();
+  return doc.exists;
+}
+
 // ===== INIT =====
 async function initFirebaseDB(){
   var admin=await fbGetUser('admin');
