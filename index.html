@@ -3,344 +3,323 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tilawah Link Academy</title>
+    <title>Tilawah Link Academy — Plateforme Éducative</title>
+    <meta name="description" content="Tilawah Link Academy : plateforme éducative moderne. Trouvez des enseignants, apprenez et enseignez.">
     <script>document.write('<link rel="stylesheet" href="styles.css?v='+Date.now()+'">');</script>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-<noscript><div style="padding:20px;text-align:center;color:red;">JavaScript est désactivé.</div></noscript>
+<noscript><div style="padding:20px;text-align:center;color:red;">JavaScript est requis.</div></noscript>
+<div id="app-loader" class="loader-overlay"><div class="loader-spinner"></div><p>Chargement...</p></div>
 
-<!-- AUTH -->
-<div id="view-auth" class="auth-section">
-    <div class="auth-container">
-        <div class="auth-box">
-            <div class="logo text-center mb-4"><i class="fa-solid fa-book-quran"></i><span>Tilawah Link Academy</span></div>
+<!-- ========== AUTH ========== -->
+<div id="view-auth" class="auth-view hidden">
+    <div class="auth-bg">
+        <div class="auth-card">
+            <div class="auth-logo"><div class="logo-icon"><i class="fa-solid fa-book-quran"></i></div><h1>Tilawah Link Academy</h1><p class="auth-tagline">Apprendre. Enseigner. Connecter.</p></div>
+            <!-- LOGIN -->
             <div id="auth-login">
-                <h2 class="text-center mb-3">Connexion</h2>
-                <div class="form-group"><label>Téléphone</label><input type="text" id="login-id" placeholder="+221..."></div>
-                <div class="form-group"><label>Mot de passe</label><input type="password" id="login-pass"></div>
-                <button class="btn btn-primary w-100" onclick="appLogin()">Se connecter</button>
-                <p class="text-center mt-3"><a href="javascript:void(0)" onclick="switchAuth('forgot')">Mot de passe oublié ?</a></p>
-                <p class="text-center mt-3">Pas de compte ? <a href="javascript:void(0)" onclick="switchAuth('register')" class="link-accent">S'inscrire</a></p>
+                <h2>Connexion</h2>
+                <div class="input-group"><i class="fa-solid fa-phone"></i><input type="text" id="login-id" placeholder="Numéro de téléphone (+221...)"></div>
+                <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="login-pass" placeholder="Mot de passe"></div>
+                <button class="btn-main w-full" id="btn-login" onclick="appLogin()"><i class="fa-solid fa-arrow-right-to-bracket"></i> Se connecter</button>
+                <div class="auth-links"><a href="#" onclick="switchAuth('forgot');return false">Mot de passe oublié ?</a></div>
+                <div class="auth-divider"><span>ou</span></div>
+                <p class="auth-switch">Pas encore de compte ? <a href="#" onclick="switchAuth('register');return false">Créer un compte</a></p>
             </div>
+            <!-- REGISTER -->
             <div id="auth-register" class="hidden">
-                <h2 class="text-center mb-3">Inscription</h2>
-                <div class="role-selector mb-3">
-                    <button id="btn-role-apprenant" class="role-btn active" onclick="selectRole('apprenant')">Apprenant</button>
-                    <button id="btn-role-enseignant" class="role-btn" onclick="selectRole('enseignant')">Enseignant</button>
-                </div>
+                <h2>Inscription</h2>
+                <div class="role-toggle"><button class="role-opt active" data-role="apprenant" onclick="selectRole('apprenant')"><i class="fa-solid fa-user-graduate"></i> Apprenant</button><button class="role-opt" data-role="enseignant" onclick="selectRole('enseignant')"><i class="fa-solid fa-chalkboard-user"></i> Enseignant</button><button class="role-opt" data-role="both" onclick="selectRole('both')"><i class="fa-solid fa-arrows-rotate"></i> Les deux</button></div>
                 <input type="hidden" id="reg-role" value="apprenant">
-                <div class="form-group"><label>Nom complet</label><input type="text" id="reg-name"></div>
-                <div class="form-group"><label>Numéro WhatsApp (avec indicatif)</label><input type="tel" id="reg-phone" placeholder="+221..."></div>
-                <div class="form-group"><label>Ville</label><input type="text" id="reg-city"></div>
-                <div id="enseignant-options" class="hidden ens-box">
-                    <label class="label-bold">Spécialités</label>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox" class="reg-spec" value="Lecture / Alphabet"> Lecture / Alphabet</label>
-                        <label><input type="checkbox" class="reg-spec" value="Tajwid"> Tajwid</label>
-                        <label><input type="checkbox" class="reg-spec" value="Mémorisation (Hifz)"> Mémorisation (Hifz)</label>
-                        <label><input type="checkbox" class="reg-spec" value="Sciences Islamiques"> Sciences Islamiques</label>
-                        <label><input type="checkbox" class="reg-spec" value="Langue Arabe"> Langue Arabe</label>
-                    </div>
-                    <label class="label-bold mt-3">Public visé</label>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox" class="reg-public" value="Enfants"> Enfants</label>
-                        <label><input type="checkbox" class="reg-public" value="Adultes"> Adultes</label>
-                        <label><input type="checkbox" class="reg-public" value="Femmes"> Femmes</label>
-                        <label><input type="checkbox" class="reg-public" value="Hommes"> Hommes</label>
-                    </div>
+                <div class="input-group"><i class="fa-solid fa-user"></i><input type="text" id="reg-name" placeholder="Nom complet"></div>
+                <div class="input-group"><i class="fa-solid fa-phone"></i><input type="tel" id="reg-phone" placeholder="Téléphone (+221...)"></div>
+                <div class="input-group"><i class="fa-solid fa-city"></i><input type="text" id="reg-city" placeholder="Ville"></div>
+                <div id="reg-teacher-opts" class="hidden">
+                    <label class="field-label">Catégories d'enseignement</label>
+                    <div class="chip-grid" id="reg-categories-grid"></div>
+                    <label class="field-label mt-2">Disciplines spécifiques</label>
+                    <div class="chip-grid" id="reg-disciplines-grid"></div>
+                    <label class="field-label mt-2">Public visé</label>
+                    <div class="chip-grid"><label class="chip-check"><input type="checkbox" class="reg-public" value="Enfants"> Enfants</label><label class="chip-check"><input type="checkbox" class="reg-public" value="Adultes"> Adultes</label><label class="chip-check"><input type="checkbox" class="reg-public" value="Femmes"> Femmes</label><label class="chip-check"><input type="checkbox" class="reg-public" value="Hommes"> Hommes</label></div>
                 </div>
-                <div class="form-group"><label>Mot de passe</label><input type="password" id="reg-pass"></div>
-                <button class="btn btn-primary w-100" onclick="appRegister()">Créer mon compte</button>
-                <p class="text-center mt-3">Déjà inscrit ? <a href="javascript:void(0)" onclick="switchAuth('login')">Se connecter</a></p>
+                <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="reg-pass" placeholder="Mot de passe"></div>
+                <button class="btn-main w-full" onclick="appRegister()"><i class="fa-solid fa-user-plus"></i> Créer mon compte</button>
+                <p class="auth-switch mt-2">Déjà inscrit ? <a href="#" onclick="switchAuth('login');return false">Se connecter</a></p>
             </div>
+            <!-- FORGOT -->
             <div id="auth-forgot" class="hidden">
-                <h2 class="text-center mb-3">Récupération</h2>
-                <p class="text-center text-sm mb-3">Un code temporaire sera envoyé sur votre WhatsApp.</p>
-                <div class="form-group"><label>Numéro WhatsApp</label><input type="tel" id="forgot-phone"></div>
-                <button class="btn btn-primary w-100" onclick="appForgotPass()">Recevoir par WhatsApp</button>
-                <p class="text-center mt-3"><a href="javascript:void(0)" onclick="switchAuth('login')">Retour</a></p>
+                <h2>Récupération</h2>
+                <p class="text-muted mb-2">Entrez votre numéro pour réinitialiser.</p>
+                <div class="input-group"><i class="fa-solid fa-phone"></i><input type="tel" id="forgot-phone" placeholder="Votre numéro"></div>
+                <button class="btn-main w-full" onclick="appForgotPass()">Réinitialiser</button>
+                <p class="auth-switch mt-2"><a href="#" onclick="switchAuth('login');return false"><i class="fa-solid fa-arrow-left"></i> Retour</a></p>
             </div>
+            <!-- FORCE PASS -->
             <div id="auth-force-pass" class="hidden">
-                <h2 class="text-center mb-3">Nouveau mot de passe</h2>
-                <div class="form-group"><label>Nouveau mot de passe</label><input type="password" id="force-new-pass"></div>
-                <button class="btn btn-primary w-100" onclick="appForcePassChange()">Mettre à jour</button>
+                <h2>Nouveau mot de passe</h2>
+                <div class="input-group"><i class="fa-solid fa-lock"></i><input type="password" id="force-new-pass" placeholder="Nouveau mot de passe"></div>
+                <button class="btn-main w-full" onclick="appForcePassChange()">Mettre à jour</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- PAIEMENT / RENOUVELLEMENT -->
+<!-- ========== PAYMENT ========== -->
 <div id="view-payment" class="hidden">
-    <div class="container section-padding">
-        <div class="payment-box">
-            <!-- Écran 1 : Payer -->
+    <div class="payment-view">
+        <div class="payment-card">
             <div id="pay-screen-pay">
-                <i class="fa-solid fa-wallet icon-big accent-color"></i>
+                <div class="payment-icon"><i class="fa-solid fa-wallet"></i></div>
                 <h2 id="pay-title">Activation de votre compte</h2>
-                <p class="mt-3" id="pay-msg">Pour accéder à la plateforme, veuillez effectuer votre paiement mensuel de <strong>1 000 FCFA</strong> via Wave.</p>
-                <div class="payment-info-box">
+                <p class="mt-1" id="pay-msg">Pour accéder à la plateforme, effectuez votre paiement de <strong>1 000 FCFA</strong> via Wave.</p>
+                <div class="payment-details">
                     <p>📱 Envoyez <strong>1 000 FCFA</strong> via Wave au :</p>
-                    <h1 class="primary-color" style="font-size:2rem;margin:12px 0;">+221 77 459 98 35</h1>
-                    <a href="https://pay.wave.com/m/M_OfMBJ3d3dT/c/SN/?amount=1000" target="_blank" class="btn btn-whatsapp w-100 mt-3" style="font-size:1.1rem;"><i class="fa-solid fa-money-bill-wave"></i> Ouvrir Wave pour payer</a>
+                    <h1 class="wave-number">+221 77 459 98 35</h1>
+                    <a href="https://pay.wave.com/m/M_OfMBJ3d3dT/c/SN/?amount=1000" target="_blank" class="btn-wave w-full"><i class="fa-solid fa-money-bill-wave"></i> Ouvrir Wave pour payer</a>
                 </div>
-                <p class="text-sm mt-3" style="color:var(--text-light);">Après avoir effectué le paiement sur Wave, cliquez sur le bouton ci-dessous.</p>
-                <button class="btn btn-primary w-100 mt-3" onclick="confirmPayment()"><i class="fa-solid fa-check-circle"></i> J'ai effectué le paiement</button>
-                <div class="mt-3"><button class="btn btn-outline" onclick="appLogout()">Se déconnecter</button></div>
+                <button class="btn-main w-full mt-2" onclick="confirmPayment()"><i class="fa-solid fa-check-circle"></i> J'ai effectué le paiement</button>
+                <button class="btn-ghost w-full mt-1" onclick="appLogout()">Se déconnecter</button>
             </div>
-            <!-- Écran 2 : En attente de validation admin -->
             <div id="pay-screen-waiting" class="hidden">
-                <i class="fa-solid fa-hourglass-half icon-big" style="color:var(--turquoise);"></i>
-                <h2>Paiement en cours de vérification</h2>
-                <p class="mt-3">Votre paiement a été signalé. L'administrateur va vérifier et valider votre compte.</p>
-                <div class="payment-info-box" style="border-left-color:var(--turquoise);">
-                    <p><i class="fa-solid fa-clock"></i> Veuillez patienter. Vous recevrez l'accès dès la validation.</p>
-                </div>
-                <div class="mt-4"><button class="btn btn-outline" onclick="appLogout()">Se déconnecter</button></div>
+                <div class="payment-icon waiting"><i class="fa-solid fa-hourglass-half"></i></div>
+                <h2>Paiement en vérification</h2>
+                <p class="mt-1">Votre paiement a été signalé. L'administrateur va vérifier et valider votre compte.</p>
+                <button class="btn-ghost w-full mt-2" onclick="appLogout()">Se déconnecter</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- PLATEFORME -->
+<!-- ========== PLATFORM ========== -->
 <div id="view-platform" class="hidden">
-    <header>
-        <nav class="navbar">
-            <div class="logo"><i class="fa-solid fa-book-quran"></i><span>Tilawah Link Academy</span></div>
-            <button class="hamburger" id="hamburger-btn" onclick="toggleMobileMenu()"><i class="fa-solid fa-bars"></i></button>
-            <div class="nav-center" id="nav-center">
-                <ul class="nav-links" id="platform-nav-links">
-                    <li><a href="javascript:void(0)" onclick="goToSection('accueil');closeMobileMenu()">Accueil</a></li>
-                    <li><a href="javascript:void(0)" onclick="goToSection('a-propos');closeMobileMenu()">À Propos</a></li>
-                    <li><a href="javascript:void(0)" onclick="goToSection('enseignants');closeMobileMenu()">Enseignants</a></li>
-                    <li><a href="javascript:void(0)" onclick="goToSection('services');closeMobileMenu()">Services</a></li>
-                    <li><a href="javascript:void(0)" onclick="goToSection('contact');closeMobileMenu()">Contact</a></li>
-                </ul>
-                <div class="nav-buttons">
-                    <button id="nav-espace-btn" class="btn btn-outline nav-btn hidden" onclick="navToProfile();closeMobileMenu()"><i class="fa-solid fa-chalkboard-user"></i> <span class="btn-label">Espace Enseignant</span></button>
-                    <button id="nav-profile-btn" class="btn btn-outline nav-btn hidden" onclick="navToProfile();closeMobileMenu()"><i class="fa-solid fa-user"></i> <span class="btn-label">Mon Profil</span></button>
-                    <button id="admin-panel-btn" class="btn btn-danger nav-btn hidden" onclick="goToAdmin();closeMobileMenu()"><i class="fa-solid fa-shield"></i> <span class="btn-label">Admin</span></button>
-                    <button class="btn btn-accent nav-btn" onclick="appLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <div id="page-main-content">
-        <!-- Hero + Welcome -->
-        <section id="accueil" class="hero">
-            <div class="hero-overlay"></div>
-            <div class="hero-content">
-                <p class="hero-welcome animate-in" id="hero-welcome-msg">Bienvenue sur <strong>Tilawah Link Academy</strong>, votre espace dédié à l'apprentissage et à l'enseignement islamique.</p>
-                <p class="hero-arabic animate-in delay-1">وَقُل رَّبِّ زِدْنِي عِلْمًا</p>
-                <p class="hero-hadith animate-in delay-1">« Et dis : "Ô mon Seigneur, augmente-moi en savoir." »</p>
-                <h1 class="animate-in delay-2">Tilawah Link Academy</h1>
-                <p class="slogan animate-in delay-2">Apprendre et enseigner le Coran, les Sciences Islamiques et la Langue Arabe, partout et pour tous.</p>
-                <div class="hero-buttons animate-in delay-3">
-                    <a href="javascript:void(0)" onclick="showTeachersPage()" class="btn btn-primary btn-glow">Trouver un enseignant</a>
-                    <a href="javascript:void(0)" onclick="goToSection('services')" class="btn btn-accent">Nos services</a>
-                </div>
-            </div>
-            <div class="hero-scroll"><i class="fa-solid fa-chevron-down"></i></div>
-        </section>
-
-        <!-- À Propos -->
-        <section id="a-propos" class="section-padding">
-            <div class="container">
-                <div class="about-grid">
-                    <div class="about-text">
-                        <h2 class="section-title">Tilawah Link Academy</h2>
-                        <p class="about-subtitle">Apprendre et enseigner le Coran, les Sciences Islamiques et la Langue Arabe, partout et pour tous.</p>
-                        <div class="hadith-box">
-                            <p class="hadith-ar">«خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ»</p>
-                            <p class="hadith-tr">— Le meilleur d'entre vous est celui qui apprend le Coran et l'enseigne. <em>(Sahih Bukhari)</em></p>
-                        </div>
-                        <p><strong>Tilawah Link Academy</strong> facilite la transmission du savoir islamique en mettant en relation directe apprenants et enseignants qualifiés.</p>
-                        <ul class="values-list">
-                            <li><i class="fa-solid fa-check-circle"></i><strong>Respect</strong> — Éthique islamique.</li>
-                            <li><i class="fa-solid fa-check-circle"></i><strong>Sérieux</strong> — Enseignants vérifiés.</li>
-                            <li><i class="fa-solid fa-check-circle"></i><strong>Accessibilité</strong> — Partout, à votre rythme.</li>
-                        </ul>
+    <!-- NAVBAR -->
+    <nav class="top-nav">
+        <div class="nav-inner">
+            <a class="nav-logo" href="#" onclick="goToView('home');return false"><div class="logo-icon-sm"><i class="fa-solid fa-book-quran"></i></div><span>Tilawah Link Academy</span></a>
+            <div class="nav-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="global-search" placeholder="Rechercher enseignants, disciplines..." onkeyup="handleGlobalSearch(event)"></div>
+            <div class="nav-actions">
+                <button class="nav-icon-btn" onclick="goToView('home')" title="Accueil" data-view="home"><i class="fa-solid fa-house"></i></button>
+                <button class="nav-icon-btn" onclick="goToView('categories')" title="Catégories" data-view="categories"><i class="fa-solid fa-grid-2"></i></button>
+                <button class="nav-icon-btn" onclick="goToView('messages')" title="Messages" data-view="messages"><i class="fa-solid fa-comment-dots"></i><span class="badge-count hidden" id="msg-badge">0</span></button>
+                <button class="nav-icon-btn" onclick="goToView('notifications')" title="Notifications" data-view="notifications"><i class="fa-solid fa-bell"></i><span class="badge-count hidden" id="notif-badge">0</span></button>
+                <div class="nav-profile-wrap">
+                    <button class="nav-avatar-btn" onclick="toggleProfileMenu()"><img id="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=6C5CE7&color=fff&size=40" alt=""><span class="online-dot"></span></button>
+                    <div class="profile-dropdown hidden" id="profile-dropdown">
+                        <div class="dropdown-header"><img id="dd-avatar" src=""><div><strong id="dd-name"></strong><small id="dd-role"></small></div></div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" onclick="goToView('profile');closeDD();return false"><i class="fa-solid fa-user"></i> Mon Profil</a>
+                        <a href="#" onclick="toggleRole();closeDD();return false" id="dd-switch-role"><i class="fa-solid fa-arrows-rotate"></i> <span id="dd-switch-label">Passer Enseignant</span></a>
+                        <a href="#" onclick="goToView('admin');closeDD();return false" id="dd-admin-link" class="hidden"><i class="fa-solid fa-shield"></i> Administration</a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" onclick="appLogout();return false" class="text-danger"><i class="fa-solid fa-right-from-bracket"></i> Déconnexion</a>
                     </div>
-                    <div class="about-image"><img src="images/mosque.png" alt="Mosquée"></div>
                 </div>
             </div>
-        </section>
-
-        <!-- Fonctionnement -->
-        <section class="bg-light section-padding">
-            <div class="container">
-                <h2 class="section-title text-center">Comment ça marche ?</h2>
-                <div class="steps-grid">
-                    <div class="step-card"><div class="step-icon"><i class="fa-solid fa-user-plus"></i></div><h3>1. Inscription</h3><p>Créez votre profil apprenant ou enseignant.</p></div>
-                    <div class="step-card"><div class="step-icon"><i class="fa-solid fa-magnifying-glass"></i></div><h3>2. Recherche</h3><p>Filtrez par spécialité, ville ou public.</p></div>
-                    <div class="step-card"><div class="step-icon"><i class="fa-brands fa-whatsapp"></i></div><h3>3. Contact Direct</h3><p>Contactez directement via WhatsApp.</p></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA vers Enseignants -->
-        <section class="section-padding text-center">
-            <div class="container">
-                <h2 class="section-title text-center">Nos Enseignants</h2>
-                <p class="section-subtitle">Découvrez nos professeurs qualifiés et contactez-les directement via WhatsApp.</p>
-                <a href="javascript:void(0)" onclick="showTeachersPage()" class="btn btn-primary btn-lg"><i class="fa-solid fa-chalkboard-user"></i> Voir tous les enseignants</a>
-            </div>
-        </section>
-
-        <!-- Services -->
-        <section id="services" class="bg-light section-padding">
-            <div class="container">
-                <h2 class="section-title text-center">Nos Formations & Services</h2>
-                <div class="services-grid">
-                    <div class="service-card"><i class="fa-solid fa-book-open-reader service-icon"></i><h3>Lecture du Coran</h3><p>Alphabet arabe et lecture fluide.</p></div>
-                    <div class="service-card"><i class="fa-solid fa-microphone-lines service-icon"></i><h3>Tajwid</h3><p>Prononciation et récitation correcte.</p></div>
-                    <div class="service-card"><i class="fa-solid fa-brain service-icon"></i><h3>Mémorisation</h3><p>Programmes de Hifz personnalisés.</p></div>
-                    <div class="service-card"><i class="fa-solid fa-children service-icon"></i><h3>Cours Enfants</h3><p>Pédagogie douce et ludique.</p></div>
-                    <div class="service-card"><i class="fa-solid fa-mosque service-icon"></i><h3>Sciences Islamiques</h3><p>Fiqh, 'Aqida, Sira.</p></div>
-                    <div class="service-card"><i class="fa-solid fa-language service-icon"></i><h3>Langue Arabe</h3><p>Comprendre et communiquer.</p></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Pourquoi nous -->
-        <section class="why-us section-padding">
-            <div class="container">
-                <h2 class="section-title text-center">Pourquoi choisir notre plateforme ?</h2>
-                <div class="why-grid">
-                    <div class="why-card"><div class="why-icon"><i class="fa-solid fa-user-check"></i></div><h3>Validation manuelle</h3><p>Chaque profil enseignant est vérifié par l'administrateur avant publication.</p></div>
-                    <div class="why-card"><div class="why-icon"><i class="fa-solid fa-photo-film"></i></div><h3>Profils enrichis</h3><p>Photos, vidéos, bio et performances pour inspirer confiance.</p></div>
-                    <div class="why-card"><div class="why-icon"><i class="fa-brands fa-whatsapp"></i></div><h3>Contact direct WhatsApp</h3><p>Communiquez sans intermédiaire, rapidement et simplement.</p></div>
-                    <div class="why-card"><div class="why-icon"><i class="fa-solid fa-laptop-house"></i></div><h3>En ligne & présentiel</h3><p>Cours depuis chez vous ou en présentiel selon l'enseignant.</p></div>
-                    <div class="why-card"><div class="why-icon"><i class="fa-solid fa-heart"></i></div><h3>Valeurs islamiques</h3><p>Un cadre respectueux fondé sur les principes de l'Islam.</p></div>
-                    <div class="why-card"><div class="why-icon"><i class="fa-solid fa-filter"></i></div><h3>Recherche avancée</h3><p>Filtrez par ville, spécialité ou public cible.</p></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Témoignages -->
-        <section class="bg-light section-padding">
-            <div class="container">
-                <h2 class="section-title text-center">Ce que disent nos membres</h2>
-                <div class="testimonials-grid">
-                    <div class="testimonial-card"><div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div><p class="quote">"J'ai trouvé un professeur de Tajwid dans ma ville. Le contact WhatsApp direct rend les choses si simples."</p><div class="author">— Ibrahim K., Apprenant</div></div>
-                    <div class="testimonial-card"><div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div><p class="quote">"Tilawah Link Academy m'a permis d'atteindre des élèves motivés. La galerie me permet de montrer mon travail."</p><div class="author">— Oustaza Khadija, Enseignante</div></div>
-                    <div class="testimonial-card"><div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div><p class="quote">"Mon fils apprend le Coran grâce à un enseignant spécialisé enfants trouvé ici."</p><div class="author">— Aïcha M., Maman</div></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Contact -->
-        <section id="contact" class="section-padding text-center">
-            <div class="container">
-                <h2 class="section-title">📲 Besoin d'aide ? Contactez-nous sur WhatsApp</h2>
-                <p class="section-subtitle">Notre équipe reste à votre disposition pour répondre à vos questions, recevoir vos signalements et vous accompagner rapidement sur la plateforme.</p>
-                <a href="https://wa.me/221774599835?text=Salam%2C%20je%20vous%20contacte%20via%20Tilawah%20Link%20Academy.%20J%27ai%20besoin%20d%27aide." target="_blank" class="btn btn-whatsapp btn-lg"><i class="fa-brands fa-whatsapp"></i> +221 77 459 98 35</a>
-            </div>
-        </section>
-
-        <footer>
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-brand"><div class="logo"><i class="fa-solid fa-book-quran"></i><span>Tilawah Link Academy</span></div><p>La plateforme de référence pour l'apprentissage du Coran.</p></div>
-                    <div class="footer-links"><h3>Navigation</h3><ul><li><a href="#accueil">Accueil</a></li><li><a href="#enseignants">Enseignants</a></li><li><a href="#services">Services</a></li></ul></div>
-                </div>
-                <div class="footer-bottom"><p>&copy; 2026 Tilawah Link Academy. Tous droits réservés.</p></div>
-            </div>
-        </footer>
-    </div>
-
-    <!-- PAGE ENSEIGNANTS (séparée) -->
-    <div id="page-teachers" class="hidden">
-        <div class="container section-padding" style="padding-top:30px;">
-            <button class="btn btn-outline mb-4" onclick="showMainPage()"><i class="fa-solid fa-arrow-left"></i> Retour à l'accueil</button>
-            <h2 class="section-title">Nos Enseignants</h2>
-            <p class="section-subtitle" style="margin-left:0;">Trouvez le professeur qui vous correspond.</p>
-            <div class="filter-bar mb-4">
-                <div class="filter-item"><i class="fa-solid fa-location-dot"></i><input type="text" id="search-city" placeholder="Ville..." onkeyup="renderTeachersList()"></div>
-                <div class="filter-item"><i class="fa-solid fa-book"></i><select id="search-spec" onchange="renderTeachersList()"><option value="">Spécialité</option><option value="Lecture / Alphabet">Lecture</option><option value="Tajwid">Tajwid</option><option value="Mémorisation (Hifz)">Hifz</option><option value="Sciences Islamiques">Sciences Isl.</option><option value="Langue Arabe">Arabe</option></select></div>
-                <div class="filter-item"><i class="fa-solid fa-users"></i><select id="search-public" onchange="renderTeachersList()"><option value="">Public</option><option value="Enfants">Enfants</option><option value="Adultes">Adultes</option><option value="Femmes">Femmes</option><option value="Hommes">Hommes</option></select></div>
-            </div>
-            <div class="teachers-grid" id="teachers-list-container"></div>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fa-solid fa-bars"></i></button>
         </div>
+    </nav>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu hidden" id="mobile-menu">
+        <a href="#" onclick="goToView('home');closeMM();return false"><i class="fa-solid fa-house"></i> Accueil</a>
+        <a href="#" onclick="goToView('categories');closeMM();return false"><i class="fa-solid fa-grid-2"></i> Catégories</a>
+        <a href="#" onclick="goToView('teachers');closeMM();return false"><i class="fa-solid fa-chalkboard-user"></i> Enseignants</a>
+        <a href="#" onclick="goToView('messages');closeMM();return false"><i class="fa-solid fa-comment-dots"></i> Messages</a>
+        <a href="#" onclick="goToView('profile');closeMM();return false"><i class="fa-solid fa-user"></i> Mon Profil</a>
+        <a href="#" onclick="appLogout();return false" class="text-danger"><i class="fa-solid fa-right-from-bracket"></i> Déconnexion</a>
     </div>
 
-    <!-- ESPACE ENSEIGNANT / PROFIL -->
-    <div id="page-profile" class="hidden section-padding bg-light">
-        <div class="container">
-            <div class="profile-box">
-                <button class="btn btn-outline mb-4" onclick="showMainPage()"><i class="fa-solid fa-arrow-left"></i> Retour</button>
-                <div id="espace-ens-header" class="hidden">
-                    <h2 class="section-title">🎓 Espace Enseignant</h2>
-                    <p class="mb-3">Mon espace personnel — Gérez votre candidature, profil, vidéo et médias.</p>
-                    <div id="profile-warning" class="hidden warning-box mb-4"><i class="fa-solid fa-clock"></i> Votre compte est en attente de validation.</div>
-                    <div id="profile-active" class="hidden success-box mb-4">✅ Profil actif ! Votre fiche est visible par tous les apprenants.</div>
+    <main class="main-content">
+        <!-- HOME VIEW -->
+        <div id="v-home" class="view-page">
+            <!-- Stories Bar -->
+            <div class="stories-bar" id="stories-bar">
+                <div class="story-add" onclick="openStoryCreator()"><div class="story-circle add-circle"><i class="fa-solid fa-plus"></i></div><span>Ma story</span></div>
+                <div class="stories-scroll" id="stories-scroll"></div>
+            </div>
+            <!-- Hero -->
+            <section class="hero-section">
+                <div class="hero-inner">
+                    <h1 id="hero-welcome">Bienvenue sur <span class="gradient-text">Tilawah Link Academy</span></h1>
+                    <p class="hero-sub">La plateforme éducative qui connecte enseignants et apprenants dans toutes les disciplines.</p>
+                    <div class="hero-actions">
+                        <button class="btn-main btn-lg" onclick="goToView('teachers')"><i class="fa-solid fa-search"></i> Trouver un enseignant</button>
+                        <button class="btn-outline-main btn-lg" onclick="goToView('categories')"><i class="fa-solid fa-grid-2"></i> Explorer les catégories</button>
+                    </div>
+                    <div class="hero-stats" id="hero-stats"></div>
                 </div>
-                <div id="espace-app-header" class="hidden"><h2 class="section-title">Mon Profil</h2></div>
-                <div class="text-center mb-4"><img id="my-avatar-preview" src="" class="avatar-preview"></div>
-                <div class="form-group"><label>📸 Photo de profil</label><input type="file" id="my-avatar-input" accept="image/*"></div>
-                <div id="profile-teacher-options" class="hidden">
-                    <div class="ens-box mb-4">
-                        <h3>📚 Mes spécialités</h3>
-                        <p class="text-sm mb-3">Sélectionnez toutes les spécialités que vous enseignez.</p>
-                        <div class="checkbox-group" id="profile-specs-checkboxes">
-                            <label><input type="checkbox" class="prof-spec" value="Lecture / Alphabet"> Lecture / Alphabet</label>
-                            <label><input type="checkbox" class="prof-spec" value="Tajwid"> Tajwid</label>
-                            <label><input type="checkbox" class="prof-spec" value="Mémorisation (Hifz)"> Mémorisation (Hifz)</label>
-                            <label><input type="checkbox" class="prof-spec" value="Sciences Islamiques"> Sciences Islamiques</label>
-                            <label><input type="checkbox" class="prof-spec" value="Langue Arabe"> Langue Arabe</label>
+            </section>
+            <!-- Categories Preview -->
+            <section class="section">
+                <div class="section-header"><h2>Explorer par catégorie</h2><a href="#" onclick="goToView('categories');return false">Voir tout <i class="fa-solid fa-arrow-right"></i></a></div>
+                <div class="categories-grid" id="home-categories"></div>
+            </section>
+            <!-- Featured Teachers -->
+            <section class="section">
+                <div class="section-header"><h2>Enseignants à découvrir</h2><a href="#" onclick="goToView('teachers');return false">Voir tout <i class="fa-solid fa-arrow-right"></i></a></div>
+                <div class="teachers-grid" id="home-teachers"></div>
+            </section>
+            <!-- Suggestions -->
+            <section class="section" id="suggestions-section">
+                <div class="section-header"><h2>Suggestions pour vous</h2></div>
+                <div class="suggestions-scroll" id="suggestions-container"></div>
+            </section>
+        </div>
+
+        <!-- CATEGORIES VIEW -->
+        <div id="v-categories" class="view-page hidden">
+            <div class="page-header"><h1><i class="fa-solid fa-grid-2"></i> Catégories</h1><p>Explorez toutes les disciplines disponibles</p></div>
+            <div class="categories-full-grid" id="categories-full"></div>
+        </div>
+
+        <!-- TEACHERS VIEW -->
+        <div id="v-teachers" class="view-page hidden">
+            <div class="page-header"><h1><i class="fa-solid fa-chalkboard-user"></i> Enseignants</h1><p>Trouvez le professeur qui vous correspond</p></div>
+            <div class="filters-bar">
+                <div class="filter-chip-group" id="active-filters"></div>
+                <div class="filters-row">
+                    <div class="filter-input"><i class="fa-solid fa-search"></i><input type="text" id="t-search" placeholder="Nom ou ville..." onkeyup="renderTeachers()"></div>
+                    <select id="t-category" onchange="updateDisciplineFilter();renderTeachers()"><option value="">Toutes catégories</option></select>
+                    <select id="t-discipline" onchange="renderTeachers()"><option value="">Toutes disciplines</option></select>
+                    <select id="t-public" onchange="renderTeachers()"><option value="">Tout public</option><option>Enfants</option><option>Adultes</option><option>Femmes</option><option>Hommes</option></select>
+                </div>
+            </div>
+            <div class="teachers-grid" id="teachers-list"></div>
+        </div>
+
+        <!-- MESSAGES VIEW -->
+        <div id="v-messages" class="view-page hidden">
+            <div class="messaging-layout">
+                <div class="conv-sidebar" id="conv-sidebar">
+                    <div class="conv-sidebar-header"><h2><i class="fa-solid fa-comment-dots"></i> Messages</h2><div class="conv-search"><i class="fa-solid fa-search"></i><input type="text" id="conv-search-input" placeholder="Rechercher..." onkeyup="filterConversations()"></div></div>
+                    <div class="conv-list" id="conv-list"><p class="empty-msg">Aucune conversation</p></div>
+                </div>
+                <div class="chat-area" id="chat-area">
+                    <div class="chat-placeholder"><i class="fa-solid fa-comments"></i><h3>Sélectionnez une conversation</h3><p>Choisissez une discussion ou envoyez un message à un enseignant</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS VIEW -->
+        <div id="v-notifications" class="view-page hidden">
+            <div class="page-header"><h1><i class="fa-solid fa-bell"></i> Notifications</h1></div>
+            <div class="notifications-list" id="notifications-list"></div>
+        </div>
+
+        <!-- PROFILE VIEW -->
+        <div id="v-profile" class="view-page hidden">
+            <div class="profile-layout">
+                <div class="profile-cover">
+                    <div class="profile-cover-gradient"></div>
+                    <div class="profile-main-info">
+                        <div class="profile-avatar-wrap"><img id="prof-avatar" src="" class="profile-avatar"><label class="avatar-edit-btn" for="prof-avatar-input"><i class="fa-solid fa-camera"></i></label><input type="file" id="prof-avatar-input" accept="image/*" class="hidden" onchange="uploadAvatar(this)"></div>
+                        <h1 id="prof-name"></h1>
+                        <p id="prof-role-badge" class="role-badge"></p>
+                        <div class="profile-stats-row">
+                            <div class="prof-stat"><strong id="prof-followers">0</strong><span>Abonnés</span></div>
+                            <div class="prof-stat"><strong id="prof-following">0</strong><span>Abonnements</span></div>
                         </div>
                     </div>
-                    <div class="form-group"><label>📝 Présentation</label><textarea id="my-bio" rows="5" placeholder="Décrivez votre parcours..."></textarea></div>
-                    <div class="ens-box mb-4">
-                        <h3>📷 Photos & 🎬 Vidéo</h3>
-                        <p class="text-sm mb-3">Photos (max 100Mo) et vidéos (max 1Go).</p>
-                        <div style="display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;"><input type="file" id="my-gallery-upload" accept="image/*,video/*"><button class="btn btn-accent" onclick="uploadMediaToGallery()">Ajouter</button></div>
-                        <div id="my-gallery-container" class="gallery-grid"></div>
-                    </div>
                 </div>
-                <button class="btn btn-primary w-100" onclick="saveMyProfile()">Enregistrer mon profil</button>
+                <div class="profile-body">
+                    <div class="profile-section">
+                        <h3>Informations</h3>
+                        <div class="input-group"><i class="fa-solid fa-user"></i><input type="text" id="prof-name-input" placeholder="Nom complet"></div>
+                        <div class="input-group"><i class="fa-solid fa-city"></i><input type="text" id="prof-city-input" placeholder="Ville"></div>
+                    </div>
+                    <!-- Role Switch -->
+                    <div class="profile-section">
+                        <h3>Mes rôles</h3>
+                        <div class="roles-manager" id="roles-manager"></div>
+                    </div>
+                    <!-- Teacher specific -->
+                    <div id="prof-teacher-section" class="hidden">
+                        <div class="profile-section">
+                            <h3>Mes catégories & disciplines</h3>
+                            <div class="chip-grid" id="prof-categories-grid"></div>
+                            <div class="chip-grid mt-2" id="prof-disciplines-grid"></div>
+                        </div>
+                        <div class="profile-section">
+                            <h3>Public visé</h3>
+                            <div class="chip-grid" id="prof-publics-grid"></div>
+                        </div>
+                        <div class="profile-section">
+                            <h3>Présentation</h3>
+                            <textarea id="prof-bio" rows="4" placeholder="Décrivez votre parcours, vos méthodes..."></textarea>
+                        </div>
+                        <div class="profile-section">
+                            <h3>Galerie</h3>
+                            <div class="gallery-upload-row"><input type="file" id="gallery-upload" accept="image/*,video/*"><button class="btn-sm" onclick="uploadGalleryMedia()"><i class="fa-solid fa-cloud-upload"></i> Ajouter</button></div>
+                            <div class="gallery-grid" id="prof-gallery"></div>
+                        </div>
+                    </div>
+                    <button class="btn-main w-full mt-2" onclick="saveProfile()"><i class="fa-solid fa-save"></i> Enregistrer</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- MODAL -->
-    <div id="teacher-modal" class="modal hidden" onclick="if(event.target===this)closeTeacherModal()">
-        <div class="modal-content" id="teacher-modal-body"></div>
-    </div>
-</div>
+        <!-- TEACHER DETAIL MODAL -->
+        <div id="teacher-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('teacher-modal')">
+            <div class="modal-card" id="teacher-modal-body"></div>
+        </div>
 
-<!-- ADMIN -->
-<div id="view-admin" class="hidden">
-    <header class="admin-header">
-        <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="logo" style="color:white;"><i class="fa-solid fa-shield"></i><span>Administration</span></div>
-            <div>
-                <button class="btn btn-primary" style="margin-right:10px;" onclick="goToPlatform()"><i class="fa-solid fa-home"></i> Plateforme</button>
-                <button class="btn btn-danger" onclick="appLogout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+        <!-- STORY VIEWER -->
+        <div id="story-viewer" class="story-viewer hidden" onclick="handleStoryClick(event)">
+            <div class="story-progress" id="story-progress"></div>
+            <div class="story-header"><img id="sv-avatar" src=""><div><strong id="sv-name"></strong><small id="sv-time"></small></div><button class="story-close" onclick="closeStoryViewer()"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="story-content" id="sv-content"></div>
+            <div class="story-footer"><span id="sv-views"><i class="fa-solid fa-eye"></i> 0</span><div class="story-reply-input"><input type="text" id="sv-reply" placeholder="Répondre..."><button onclick="sendStoryReply()"><i class="fa-solid fa-paper-plane"></i></button></div></div>
+        </div>
+
+        <!-- STORY CREATOR -->
+        <div id="story-creator" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('story-creator')">
+            <div class="modal-card story-creator-card">
+                <div class="modal-header"><h2>Créer une story</h2><button onclick="closeModal('story-creator')"><i class="fa-solid fa-xmark"></i></button></div>
+                <div class="story-type-tabs">
+                    <button class="active" onclick="setStoryType('text')"><i class="fa-solid fa-font"></i> Texte</button>
+                    <button onclick="setStoryType('photo')"><i class="fa-solid fa-image"></i> Photo</button>
+                    <button onclick="setStoryType('video')"><i class="fa-solid fa-video"></i> Vidéo</button>
+                </div>
+                <div id="sc-text-area"><textarea id="sc-text" placeholder="Écrivez votre story..." rows="4"></textarea>
+                    <label class="field-label">Couleur de fond</label>
+                    <div class="color-picks" id="sc-colors"></div>
+                </div>
+                <div id="sc-media-area" class="hidden"><input type="file" id="sc-file" accept="image/*,video/*"><div id="sc-preview"></div></div>
+                <select id="sc-category"><option value="">Catégorie (optionnel)</option></select>
+                <button class="btn-main w-full mt-2" onclick="publishStory()"><i class="fa-solid fa-paper-plane"></i> Publier</button>
             </div>
         </div>
-    </header>
-    <div class="container section-padding">
-        <!-- Stats -->
-        <div class="admin-stats-cards mb-4">
-            <div class="stat-card"><i class="fa-solid fa-chalkboard-user"></i><div><span class="stat-num" id="stat-teachers">0</span><span class="stat-label">Enseignants</span></div></div>
-            <div class="stat-card"><i class="fa-solid fa-users"></i><div><span class="stat-num" id="stat-students">0</span><span class="stat-label">Apprenants</span></div></div>
-            <div class="stat-card"><i class="fa-solid fa-user-group"></i><div><span class="stat-num" id="stat-total">0</span><span class="stat-label">Total</span></div></div>
+
+        <!-- ADMIN VIEW -->
+        <div id="v-admin" class="view-page hidden">
+            <div class="page-header admin-header-bg"><h1><i class="fa-solid fa-shield"></i> Administration</h1><button class="btn-outline-light" onclick="goToView('home')"><i class="fa-solid fa-home"></i> Retour</button></div>
+            <div class="admin-stats" id="admin-stats"></div>
+            <div class="admin-section">
+                <h2>Gestion des Utilisateurs</h2>
+                <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Nom</th><th>Rôle</th><th>Téléphone</th><th>Ville</th><th>Statut</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="admin-tbody"></tbody></table></div>
+            </div>
+            <div class="admin-section">
+                <h2>Modération des Médias</h2>
+                <div class="gallery-grid" id="admin-gallery"></div>
+            </div>
         </div>
-        <h2 class="section-title">Gestion des Utilisateurs</h2>
-        <div class="admin-table-container mb-4">
-            <table class="admin-table"><thead><tr><th>Nom</th><th>Rôle</th><th>Téléphone</th><th>Ville</th><th>Statut</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="admin-table-body"></tbody></table>
-        </div>
-        <h2 class="section-title mt-4">Modération des Médias</h2>
-        <div id="admin-gallery-body" class="gallery-grid admin-gallery-box"></div>
-    </div>
+    </main>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <button onclick="goToView('home')" data-view="home" class="active"><i class="fa-solid fa-house"></i><span>Accueil</span></button>
+        <button onclick="goToView('categories')" data-view="categories"><i class="fa-solid fa-grid-2"></i><span>Explorer</span></button>
+        <button onclick="openStoryCreator()" class="bottom-nav-add"><i class="fa-solid fa-plus"></i></button>
+        <button onclick="goToView('messages')" data-view="messages"><i class="fa-solid fa-comment-dots"></i><span>Messages</span><span class="badge-count hidden" id="msg-badge-mobile">0</span></button>
+        <button onclick="goToView('profile')" data-view="profile"><i class="fa-solid fa-user"></i><span>Profil</span></button>
+    </nav>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script>document.write('<scr'+'ipt src="firebase-init.js?v='+Date.now()+'"></scr'+'ipt>');</script>
-<script>document.write('<scr'+'ipt src="script.js?v='+Date.now()+'"></scr'+'ipt>');</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script>document.write('<scr'+'ipt src="firebase-init.js?v='+Date.now()+'"><\/scr'+'ipt>');</script>
+<script>document.write('<scr'+'ipt src="script.js?v='+Date.now()+'"><\/scr'+'ipt>');</script>
 </body>
 </html>

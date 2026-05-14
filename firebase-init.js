@@ -1,4 +1,4 @@
-// Firebase Init + Data Layer
+// AfroEduLink - Firebase Data Layer
 firebase.initializeApp({
   apiKey:"AIzaSyD-ZZFRkeldSPlsRs6UqIylwNfaojWTZTc",
   authDomain:"tilawah-link-academy.firebaseapp.com",
@@ -7,14 +7,27 @@ firebase.initializeApp({
   messagingSenderId:"924154130867",
   appId:"1:924154130867:web:61d9e3009d619067dc9bc6"
 });
-var db=firebase.firestore();
+var db = firebase.firestore();
+var storage = firebase.storage();
 
-// Session locale (qui est connecté sur CE navigateur)
-function getSession(){try{return JSON.parse(localStorage.getItem('tla_session'));}catch(e){return null;}}
-function setSession(u){localStorage.setItem('tla_session',JSON.stringify(u));}
-function clearSession(){localStorage.removeItem('tla_session');}
+// ===== SESSION =====
+function getSession(){try{return JSON.parse(localStorage.getItem('ael_session'));}catch(e){return null;}}
+function setSession(u){localStorage.setItem('ael_session',JSON.stringify(u));}
+function clearSession(){localStorage.removeItem('ael_session');}
 
-// Firestore: Users
+// ===== CATEGORIES =====
+var CATEGORIES = {
+  'Sciences':{icon:'fa-flask',color:'#4CAF50',disciplines:['Mathématiques','Physique','Chimie','Biologie','SVT']},
+  'Langues':{icon:'fa-language',color:'#2196F3',disciplines:['Français','Anglais','Arabe','Espagnol','Allemand','Wolof']},
+  'Informatique':{icon:'fa-laptop-code',color:'#7C3AED',disciplines:['Programmation','Développement Web','Data Science','Intelligence Artificielle','Bureautique']},
+  'Business':{icon:'fa-briefcase',color:'#F59E0B',disciplines:['Marketing','Comptabilité','Finance','Management','Entrepreneuriat']},
+  'Arts':{icon:'fa-palette',color:'#EC4899',disciplines:['Dessin','Musique','Photographie','Design Graphique','Montage Vidéo']},
+  'Religion':{icon:'fa-mosque',color:'#06B6D4',disciplines:['Coran','Tajwid','Mémorisation (Hifz)','Sciences Islamiques','Fiqh']},
+  'Développement Personnel':{icon:'fa-brain',color:'#F97316',disciplines:['Communication','Leadership','Productivité','Coaching','Prise de parole']},
+  'Soutien Scolaire':{icon:'fa-graduation-cap',color:'#6366F1',disciplines:['Primaire','Collège','Lycée','Préparation BAC','Concours','Aide aux devoirs']}
+};
+
+// ===== USERS =====
 async function fbGetAllUsers(){
   var snap=await db.collection('users').get();
   var arr=[];snap.forEach(function(d){arr.push(d.data());});return arr;
@@ -34,46 +47,186 @@ async function fbFindByPhone(phone){
   if(snap.empty)return null;
   var r=null;snap.forEach(function(d){r=d.data();});return r;
 }
+// FIX: Login no longer uses compound query (no composite index needed)
 async function fbFindByLogin(id,pass){
-  // Try phone
-  var snap=await db.collection('users').where('phone','==',id).where('password','==',pass).get();
-  if(!snap.empty){var r=null;snap.forEach(function(d){r=d.data();});return r;}
-  // Try email
-  snap=await db.collection('users').where('email','==',id).where('password','==',pass).get();
-  if(!snap.empty){var r=null;snap.forEach(function(d){r=d.data();});return r;}
-  return null;
+  try{
+    var snap=await db.collection('users').where('phone','==',id).get();
+    if(!snap.empty){
+      var user=null;
+      snap.forEach(function(d){var u=d.data();if(u.password===pass)user=u;});
+      if(user)return user;
+    }
+    snap=await db.collection('users').where('email','==',id).get();
+    if(!snap.empty){
+      var user=null;
+      snap.forEach(function(d){var u=d.data();if(u.password===pass)user=u;});
+      if(user)return user;
+    }
+    return null;
+  }catch(e){console.error('Login error:',e);return null;}
 }
 
-// Firestore: Media metadata
+// ===== MEDIA =====
 async function fbGetAllMedia(){
   var snap=await db.collection('media').get();
   var arr=[];snap.forEach(function(d){arr.push(d.data());});return arr;
 }
-async function fbAddMedia(mid,data){
-  await db.collection('media').doc(mid).set(data);
-}
-async function fbDeleteMedia(mid){
-  await db.collection('media').doc(mid).delete();
-}
+async function fbAddMedia(mid,data){await db.collection('media').doc(mid).set(data);}
+async function fbDeleteMedia(mid){await db.collection('media').doc(mid).delete();}
 
-// Storage via Firestore (pas besoin de Firebase Storage)
+// ===== STORAGE =====
+async function fbUploadToStorage(path,file){
+  var ref=storage.ref().child(path);
+  await ref.put(file);
+  return await ref.getDownloadURL();
+}
+async function fbDeleteFromStorage(path){
+  try{await storage.ref().child(path).delete();}catch(e){console.log('Storage delete:',e);}
+}
+// Legacy compat
 async function fbUploadFile(mid,file){
-  return new Promise(function(resolve){
-    var reader=new FileReader();
-    reader.onload=function(e){resolve(e.target.result);};
-    reader.readAsDataURL(file);
-  });
+  try{
+    var url=await fbUploadToStorage('media/'+mid,file);
+    return url;
+  }catch(e){
+    return new Promise(function(resolve){
+      var reader=new FileReader();
+      reader.onload=function(ev){resolve(ev.target.result);};
+      reader.readAsDataURL(file);
+    });
+  }
 }
 async function fbGetFileUrl(mid){
   var doc=await db.collection('media').doc(mid).get();
   if(doc.exists&&doc.data().url)return doc.data().url;return null;
 }
-async function fbDeleteFile(mid){}
+async function fbDeleteFile(mid){await fbDeleteFromStorage('media/'+mid);}
 
-// Init admin if needed
+// ===== CONVERSATIONS =====
+async function fbGetConversations(userId){
+  var snap=await db.collection('conversations')
+    .where('participants','array-contains',userId).get();
+  var arr=[];snap.forEach(function(d){arr.push({id:d.id,...d.data()});});
+  arr.sort(function(a,b){
+    var ta=a.updatedAt?a.updatedAt.toDate?a.updatedAt.toDate():new Date(a.updatedAt):new Date(0);
+    var tb=b.updatedAt?b.updatedAt.toDate?b.updatedAt.toDate():new Date(b.updatedAt):new Date(0);
+    return tb-ta;
+  });
+  return arr;
+}
+async function fbGetOrCreateConversation(uid1,uid2){
+  var snap=await db.collection('conversations')
+    .where('participants','array-contains',uid1).get();
+  var found=null;
+  snap.forEach(function(d){
+    var data=d.data();
+    if(data.participants.indexOf(uid2)!==-1)found={id:d.id,...data};
+  });
+  if(found)return found;
+  var ref=db.collection('conversations').doc();
+  var conv={participants:[uid1,uid2],lastMessage:null,updatedAt:new Date().toISOString(),createdAt:new Date().toISOString(),unread:{}};
+  conv.unread[uid1]=0;conv.unread[uid2]=0;
+  await ref.set(conv);
+  return{id:ref.id,...conv};
+}
+async function fbSendMessage(convId,msg){
+  await db.collection('conversations').doc(convId).collection('messages').add(msg);
+  var txt=msg.text||(msg.type==='voice'?'🎤 Message vocal':msg.type==='file'?'📎 Fichier':'💬 Message');
+  var upd={lastMessage:{text:txt,senderId:msg.senderId,timestamp:msg.timestamp},updatedAt:new Date().toISOString()};
+  upd['unread.'+msg.recipientId]=firebase.firestore.FieldValue.increment(1);
+  await db.collection('conversations').doc(convId).update(upd);
+}
+function fbListenMessages(convId,callback){
+  return db.collection('conversations').doc(convId).collection('messages')
+    .orderBy('timestamp','asc').onSnapshot(function(snap){
+      var msgs=[];snap.forEach(function(d){msgs.push({id:d.id,...d.data()});});
+      callback(msgs);
+    });
+}
+function fbListenConversations(userId,callback){
+  return db.collection('conversations')
+    .where('participants','array-contains',userId)
+    .onSnapshot(function(snap){
+      var convs=[];snap.forEach(function(d){convs.push({id:d.id,...d.data()});});
+      convs.sort(function(a,b){
+        var ta=a.updatedAt?new Date(a.updatedAt):new Date(0);
+        var tb=b.updatedAt?new Date(b.updatedAt):new Date(0);
+        return tb-ta;
+      });
+      callback(convs);
+    });
+}
+async function fbMarkAsRead(convId,userId){
+  var upd={};upd['unread.'+userId]=0;
+  await db.collection('conversations').doc(convId).update(upd);
+}
+
+// ===== STORIES =====
+async function fbCreateStory(data){
+  var ref=db.collection('stories').doc();
+  data.id=ref.id;await ref.set(data);return data;
+}
+async function fbGetActiveStories(){
+  var now=new Date().toISOString();
+  var snap=await db.collection('stories').where('expiresAt','>',now).get();
+  var arr=[];snap.forEach(function(d){arr.push(d.data());});
+  arr.sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+  return arr;
+}
+async function fbAddStoryView(storyId,userId){
+  await db.collection('stories').doc(storyId).update({
+    views:firebase.firestore.FieldValue.arrayUnion({userId:userId,timestamp:new Date().toISOString()})
+  });
+}
+async function fbReplyToStory(storyId,reply){
+  await db.collection('stories').doc(storyId).update({
+    replies:firebase.firestore.FieldValue.arrayUnion(reply)
+  });
+}
+async function fbDeleteStory(storyId){await db.collection('stories').doc(storyId).delete();}
+async function fbGetUserStories(userId){
+  var now=new Date().toISOString();
+  var snap=await db.collection('stories').where('userId','==',userId).get();
+  var arr=[];snap.forEach(function(d){var s=d.data();if(s.expiresAt>now)arr.push(s);});
+  return arr;
+}
+
+// ===== FOLLOW =====
+async function fbFollow(followerId,followedId){
+  await db.collection('users').doc(followerId).update({following:firebase.firestore.FieldValue.arrayUnion(followedId)});
+  await db.collection('users').doc(followedId).update({followers:firebase.firestore.FieldValue.arrayUnion(followerId)});
+}
+async function fbUnfollow(followerId,followedId){
+  await db.collection('users').doc(followerId).update({following:firebase.firestore.FieldValue.arrayRemove(followedId)});
+  await db.collection('users').doc(followedId).update({followers:firebase.firestore.FieldValue.arrayRemove(followerId)});
+}
+
+// ===== NOTIFICATIONS =====
+async function fbAddNotification(userId,notif){
+  await db.collection('notifications').add({...notif,userId:userId,read:false,timestamp:new Date().toISOString()});
+}
+async function fbGetNotifications(userId){
+  var snap=await db.collection('notifications').where('userId','==',userId).get();
+  var arr=[];snap.forEach(function(d){arr.push({id:d.id,...d.data()});});
+  arr.sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp);});
+  return arr.slice(0,50);
+}
+async function fbMarkNotifRead(notifId){
+  await db.collection('notifications').doc(notifId).update({read:true});
+}
+
+// ===== ONLINE STATUS =====
+async function fbSetOnlineStatus(userId,isOnline){
+  await db.collection('users').doc(userId).update({isOnline:isOnline,lastSeen:new Date().toISOString()});
+}
+
+// ===== INIT =====
 async function initFirebaseDB(){
   var admin=await fbGetUser('admin');
   if(!admin){
-    await fbSetUser('admin',{id:'admin',role:'admin',name:'Propriétaire',email:'admin@tilawahlink.academy',phone:'admin',password:'admin',status:'active',city:'Dakar',specs:[],publics:[],bio:'',avatar:''});
+    await fbSetUser('admin',{id:'admin',role:'admin',roles:['admin'],activeRole:'admin',
+      name:'Administrateur',email:'admin@tilawahlink.academy',phone:'admin',password:'admin',
+      status:'active',city:'Dakar',categories:[],disciplines:[],publics:[],bio:'',avatar:'',
+      followers:[],following:[],isOnline:false,lastSeen:'',createdAt:new Date().toISOString()});
   }
 }

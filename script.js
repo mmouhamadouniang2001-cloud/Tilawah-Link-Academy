@@ -1,5 +1,6 @@
 window.onerror=function(msg,s,l){document.body.innerHTML='<div style="background:red;color:white;padding:20px"><h2>Erreur</h2><p>'+msg+'</p><p>Ligne: '+l+'</p></div>'+document.body.innerHTML;};
-document.addEventListener("DOMContentLoaded",async function(){await initFirebaseDB();await refreshInterface();});
+window.onunhandledrejection=function(e){alert('Erreur: '+e.reason);};
+document.addEventListener("DOMContentLoaded",async function(){try{await initFirebaseDB();await refreshInterface();}catch(e){alert('Erreur Firebase: '+e.message);console.error(e);}});
 function hideAllViews(){var ids=['view-auth','view-payment','view-platform','view-admin','page-main-content','page-profile','page-teachers'];for(var i=0;i<ids.length;i++){var el=document.getElementById(ids[i]);if(el)el.classList.add('hidden');}var m=document.getElementById('teacher-modal');if(m)m.classList.add('hidden');}
 
 window.refreshInterface=async function(){
