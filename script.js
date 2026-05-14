@@ -150,18 +150,15 @@ async function loadStoriesView(){
   await loadStoriesBar('stories-scroll-full');
   var cu=getSession();if(!cu)return;
   var sf=document.getElementById('stories-feed');if(!sf)return;
-  var stories=await fbGetActiveStories();sf.innerHTML='';
-  var following=cu.following||[];
-  for(var i=0;i<stories.length;i++){
-    var s=stories[i];if(s.userId!==cu.id&&following.indexOf(s.userId)===-1)continue;
-    var av=s.userAvatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(s.userName)+'&background=0d6e4e&color=fff&size=42';
-    var content='';
-    if(s.type==='text')content='<div class="text-story" style="background:'+s.bgColor+';padding:20px;border-radius:var(--radius);color:white;min-height:100px;display:flex;align-items:center;justify-content:center;">'+s.text+'</div>';
-    else if(s.mediaUrl){if(s.mediaType&&s.mediaType.startsWith('video/'))content='<video src="'+s.mediaUrl+'" controls style="max-width:100%;border-radius:12px;"></video>';else content='<img src="'+s.mediaUrl+'" style="max-width:100%;border-radius:12px;">';}
-    sf.innerHTML+='<div class="post-card"><div class="post-header"><img src="'+av+'" onclick="viewUserProfile(\''+s.userId+'\')"><div class="post-header-info"><strong onclick="viewUserProfile(\''+s.userId+'\')">'+s.userName+'</strong><small>Story · '+timeAgo(s.createdAt)+'</small></div></div><div class="post-body">'+content+'</div></div>';
+  sf.innerHTML='<p class="text-muted text-center">Cliquez sur un cercle ci-dessus pour voir une story.</p>';
+  var myStories=await fbGetUserStories(cu.id);
+  if(myStories.length>0){sf.innerHTML='<h3 style="margin-bottom:12px;">Mes stories actives</h3>';
+    for(var i=0;i<myStories.length;i++){var s=myStories[i];
+      sf.innerHTML+='<div class="post-card" style="padding:16px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span>'+s.type+' · '+timeAgo(s.createdAt)+' · <i class="fa-solid fa-eye"></i> '+(s.views?s.views.length:0)+' vues</span><button class="btn-danger btn-sm" onclick="deleteMyStory(\''+s.id+'\')"><i class="fa-solid fa-trash"></i></button></div></div>';
+    }
   }
-  if(sf.innerHTML==='')sf.innerHTML='<p class="empty-msg">Aucune story. Suivez des profils pour voir leurs stories !</p>';
 }
+
 window.openStoryViewer=async function(userId){
   var stories=await fbGetActiveStories();var userStories=[];
   for(var i=0;i<stories.length;i++)if(stories[i].userId===userId)userStories.push(stories[i]);
@@ -194,7 +191,7 @@ function loadCategories(){
   var cg=document.getElementById('categories-full');if(!cg)return;cg.innerHTML='';
   Object.keys(CATEGORIES).forEach(function(k){var c=CATEGORIES[k];
     var discList=c.disciplines.map(function(d){return '<span class="badge" style="margin:2px;">'+d+'</span>';}).join('');
-    cg.innerHTML+='<div class="cat-card" onclick="filterByCategory(\''+k+'\')"><i class="fa-solid '+c.icon+'" style="color:'+c.color+'"></i><h3>'+k+'</h3><span>'+c.disciplines.length+' disciplines</span><div style="margin-top:8px;">'+discList+'</div></div>';
+    cg.innerHTML+='<div class="cat-card"><div onclick="filterByCategory(\''+k+'\')" style="cursor:pointer;"><i class="fa-solid '+c.icon+'" style="color:'+c.color+'"></i><h3>'+k+'</h3><span>'+c.disciplines.length+' disciplines</span></div><div class="cat-disc-toggle" style="margin-top:8px;"><button class="btn-sm btn-outline-main" onclick="event.stopPropagation();this.nextElementSibling.classList.toggle(\'hidden\');this.textContent=this.nextElementSibling.classList.contains(\'hidden\')?\' Voir disciplines\':\' Masquer\'">Voir disciplines</button><div class="hidden" style="margin-top:8px;">'+discList+'</div></div></div>';
   });
 }
 window.filterByCategory=function(cat){goToView('teachers');setTimeout(function(){var sel=document.getElementById('t-category');if(sel){sel.value=cat;updateDisciplineFilter();renderTeachers();}},100);};
@@ -326,15 +323,17 @@ var currentConvId=null,msgListener=null,convListener=null;
 async function loadMessages(){var cu=getSession();if(!cu)return;if(convListener)convListener();convListener=fbListenConversations(cu.id,function(convs){renderConvList(convs);});}
 async function renderConvList(convs){
   var cl=document.getElementById('conv-list');if(!cl)return;var cu=getSession();if(!cu)return;
-  if(convs.length===0){cl.innerHTML='<p class="empty-msg">Aucune conversation</p>';return;}cl.innerHTML='';
+  if(convs.length===0){cl.innerHTML='<p class="empty-msg">Aucune conversation</p>';return;}cl.innerHTML='';var hasConv=false;
   for(var i=0;i<convs.length;i++){var c=convs[i];var otherId=c.participants[0]===cu.id?c.participants[1]:c.participants[0];
-    var other=await fbGetUser(otherId);if(!other)continue;
+    if(otherId===cu.id)continue;
+    var other=await fbGetUser(otherId);if(!other)continue;hasConv=true;
     var av=other.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(other.name)+'&background=0d6e4e&color=fff&size=44';
     var unread=c.unread&&c.unread[cu.id]?c.unread[cu.id]:0;var lastMsg=c.lastMessage?c.lastMessage.text||'':'';
     var div=document.createElement('div');div.className='conv-item'+(currentConvId===c.id?' active':'');div.setAttribute('data-conv-id',c.id);
     div.innerHTML='<img src="'+av+'"><div class="conv-item-info"><strong>'+other.name+'</strong><p>'+lastMsg.substring(0,40)+'</p></div>'+(unread>0?'<div class="conv-unread">'+unread+'</div>':'');
     div.onclick=(function(cid,o){return function(){openConversation(cid,o);};})(c.id,other);cl.appendChild(div);
   }
+  if(!hasConv)cl.innerHTML='<p class="empty-msg">Aucune conversation</p>';
 }
 async function openConversation(convId,otherUser){
   currentConvId=convId;var cu=getSession();var ca=document.getElementById('chat-area');if(!ca)return;
@@ -349,14 +348,35 @@ async function openConversation(convId,otherUser){
       else if(m.type==='voice')content='<div class="voice-msg"><button onclick="playVoice(this,\''+m.fileUrl+'\')"><i class="fa-solid fa-play"></i></button><div class="voice-bar"></div></div>';
       else if(m.type==='file')content='<div class="file-attach"><i class="fa-solid fa-file"></i><a href="'+m.fileUrl+'" target="_blank" style="color:inherit;">'+m.fileName+'</a></div>';
       else content=m.text||'';
-      mc.innerHTML+='<div class="msg-bubble '+cls+'">'+content+'<span class="msg-time">'+new Date(m.timestamp).toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'})+'</span></div>';
+      var delBtn=m.senderId===cu.id?'<button class="msg-delete-btn" onclick="deleteMsg(\''+convId+'\',\''+m.id+'\')"><i class="fa-solid fa-trash"></i></button>':'';
+      mc.innerHTML+='<div class="msg-bubble '+cls+'">'+content+delBtn+'<span class="msg-time">'+new Date(m.timestamp).toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'})+'</span></div>';
     }mc.scrollTop=mc.scrollHeight;
   });
 }
 window.sendMessage=async function(){var input=document.getElementById('msg-input');if(!input||!input.value.trim())return;var cu=getSession();if(!cu||!currentConvId)return;var doc=await db.collection('conversations').doc(currentConvId).get();if(!doc.exists)return;var conv=doc.data();var rid=conv.participants[0]===cu.id?conv.participants[1]:conv.participants[0];await fbSendMessage(currentConvId,{text:input.value.trim(),senderId:cu.id,recipientId:rid,timestamp:new Date().toISOString(),type:'text'});input.value='';};
 window.sendFileMsg=async function(input,type){if(!input.files||!input.files[0])return;var cu=getSession();if(!cu||!currentConvId)return;var file=input.files[0];var mid='chat_'+Date.now();var url=await fbUploadFile(mid,file);var doc=await db.collection('conversations').doc(currentConvId).get();if(!doc.exists)return;var conv=doc.data();var rid=conv.participants[0]===cu.id?conv.participants[1]:conv.participants[0];await fbSendMessage(currentConvId,{senderId:cu.id,recipientId:rid,timestamp:new Date().toISOString(),type:type,fileUrl:url,fileName:file.name,text:type==='image'?'📷 Photo':type==='video'?'🎥 Vidéo':'📎 '+file.name});input.value='';};
-window.recordVoice=function(){alert('L\'enregistrement vocal nécessite un navigateur compatible. Fonctionnalité bientôt disponible.');};
-window.playVoice=function(btn,url){var a=new Audio(url);a.play();};
+window.recordVoice=function(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){alert('Votre navigateur ne supporte pas l\'enregistrement audio.');return;}
+  if(window._recording){window._mediaRecorder.stop();return;}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    window._recording=true;window._audioChunks=[];
+    var mr=new MediaRecorder(stream);window._mediaRecorder=mr;
+    mr.ondataavailable=function(e){window._audioChunks.push(e.data);};
+    mr.onstop=async function(){
+      window._recording=false;stream.getTracks().forEach(function(t){t.stop();});
+      var blob=new Blob(window._audioChunks,{type:'audio/webm'});var cu=getSession();if(!cu||!currentConvId)return;
+      var mid='voice_'+Date.now();var url=await fbUploadFile(mid,blob);
+      var doc=await db.collection('conversations').doc(currentConvId).get();if(!doc.exists)return;
+      var conv=doc.data();var rid=conv.participants[0]===cu.id?conv.participants[1]:conv.participants[0];
+      await fbSendMessage(currentConvId,{senderId:cu.id,recipientId:rid,timestamp:new Date().toISOString(),type:'voice',fileUrl:url,text:'🎤 Message vocal'});
+    };
+    mr.start();alert('🔴 Enregistrement en cours... Cliquez à nouveau sur le micro pour arrêter.');
+  }).catch(function(e){alert('Impossible d\'accéder au micro: '+e.message);});
+};
+window.deleteMsg=async function(convId,msgId){if(!confirm('Supprimer ce message ?'))return;await db.collection('conversations').doc(convId).collection('messages').doc(msgId).delete();};
+window.deleteMyStory=async function(storyId){if(!confirm('Supprimer cette story ?'))return;await fbDeleteStory(storyId);alert('Story supprimée.');loadStoriesView();};
+window.playVoice=function(btn,url){var a=new Audio(url);a.play();btn.innerHTML='<i class="fa-solid fa-pause"></i>';a.onended=function(){btn.innerHTML='<i class="fa-solid fa-play"></i>';};};
+window.switchProfileRole=async function(role){var cu=getSession();if(!cu)return;cu.activeRole=role;await fbSetUser(cu.id,{activeRole:role});setSession(cu);setupNav(cu);loadProfile();alert('Rôle actif : '+role);};
 window.startConversation=async function(otherId){var cu=getSession();if(!cu||cu.id===otherId){alert('Vous ne pouvez pas vous envoyer un message.');return;}var conv=await fbGetOrCreateConversation(cu.id,otherId);var other=await fbGetUser(otherId);if(!other)return;goToView('messages');setTimeout(function(){openConversation(conv.id,other);},300);};
 window.filterConversations=function(){var q=((document.getElementById('conv-search-input')||{}).value||'').toLowerCase();document.querySelectorAll('.conv-item').forEach(function(c){var n=c.querySelector('strong');if(n&&n.textContent.toLowerCase().indexOf(q)!==-1)c.style.display='';else c.style.display='none';});};
 
@@ -379,7 +399,7 @@ async function loadProfile(){
     renderChips('prof-disciplines-grid',allD,cu.disciplines||[],'prof-disc');
     renderChips('prof-publics-grid',['Enfants','Adultes','Femmes','Hommes'],cu.publics||[],'prof-pub');
   }else ts.classList.add('hidden');}
-  var rm=document.getElementById('roles-manager');if(rm){rm.innerHTML='';(cu.roles||[cu.role]).forEach(function(r){rm.innerHTML+='<div class="role-card'+(r===(cu.activeRole||cu.role)?' active':'')+'">'+r+'</div>';});}
+  var rm=document.getElementById('roles-manager');if(rm){rm.innerHTML='';(cu.roles||[cu.role]).forEach(function(r){var isAct=r===(cu.activeRole||cu.role);rm.innerHTML+='<div class="role-card'+(isAct?' active':'')+'" onclick="switchProfileRole(\''+r+'\')" style="cursor:pointer;">'+r+(isAct?' ✓':'')+'</div>';});}
   // My posts
   var mp=document.getElementById('my-posts');if(mp){var posts=await fbGetUserPosts(cu.id);mp.innerHTML='';
     if(posts.length===0)mp.innerHTML='<p class="empty-msg">Aucune publication.</p>';
