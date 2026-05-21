@@ -97,9 +97,9 @@
             <div class="nav-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="global-search" placeholder="Rechercher..." onkeyup="handleGlobalSearch(event)"></div>
             <div class="nav-actions">
                 <button class="nav-icon-btn" onclick="goToView('home')" title="Accueil" data-view="home"><i class="fa-solid fa-house"></i></button>
-                <button class="nav-icon-btn" onclick="goToView('categories')" title="Catégories" data-view="categories"><i class="fa-solid fa-grid-2"></i></button>
-                <button class="nav-icon-btn" onclick="goToView('messages')" title="Messages" data-view="messages"><i class="fa-solid fa-comment-dots"></i><span class="badge-count hidden" id="msg-badge">0</span></button>
-                <button class="nav-icon-btn" onclick="goToView('notifications')" title="Notifications" data-view="notifications"><i class="fa-solid fa-bell"></i><span class="badge-count hidden" id="notif-badge">0</span></button>
+                <button class="nav-icon-btn" onclick="goToView('categories')" title="Catégories" data-view="categories"><i class="fa-solid fa-th-large"></i></button>
+                <button class="nav-icon-btn" onclick="goToView('messages')" title="Messages" data-view="messages"><i class="fa-regular fa-comment-dots"></i><span class="badge-count hidden" id="msg-badge">0</span></button>
+                <button class="nav-icon-btn" onclick="goToView('notifications')" title="Notifications" data-view="notifications"><i class="fa-regular fa-bell"></i><span class="badge-count hidden" id="notif-badge">0</span></button>
                 <button class="nav-icon-btn" onclick="toggleDarkMode()" title="Mode sombre" id="dark-mode-btn"><i class="fa-solid fa-moon"></i></button>
                 <div class="nav-profile-wrap">
                     <button class="nav-avatar-btn" onclick="toggleProfileMenu()"><img id="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=0d6e4e&color=fff&size=40" alt=""><span class="online-dot"></span></button>
@@ -256,10 +256,6 @@
                         <div class="profile-section"><h3>Catégories & disciplines</h3><div class="chip-grid" id="prof-categories-grid"></div><div class="chip-grid mt-2" id="prof-disciplines-grid"></div></div>
                         <div class="profile-section"><h3>Public visé</h3><div class="chip-grid" id="prof-publics-grid"></div></div>
                         <div class="profile-section"><h3>Présentation</h3><textarea id="prof-bio" rows="4" placeholder="Décrivez votre parcours..."></textarea></div>
-                        <div class="profile-section"><h3>Galerie</h3>
-                            <div class="gallery-upload-row"><input type="file" id="gallery-upload" accept="image/*,video/*"><button class="btn-sm" onclick="uploadGalleryMedia()"><i class="fa-solid fa-cloud-upload"></i> Ajouter</button></div>
-                            <div class="gallery-grid" id="prof-gallery"></div>
-                        </div>
                     </div>
                     <button class="btn-main w-full mt-2" onclick="saveProfile()"><i class="fa-solid fa-save"></i> Enregistrer</button>
                 </div>
@@ -311,8 +307,15 @@
             <div class="modal-card">
                 <div class="modal-header"><h2>Commentaires</h2><button onclick="closeModal('comments-modal')"><i class="fa-solid fa-xmark"></i></button></div>
                 <div id="comments-list"></div>
-                <div class="comment-input-row"><input type="text" id="comment-text" placeholder="Votre commentaire..." class="comment-input"><button class="btn-sm" onclick="postComment()"><i class="fa-solid fa-paper-plane"></i></button></div>
+                <div id="reply-indicator" class="reply-indicator hidden"><span id="reply-indicator-text"></span><button onclick="cancelReply()"><i class="fa-solid fa-xmark"></i></button></div>
+                <div class="comment-input-row"><input type="text" id="comment-text" placeholder="Votre commentaire..." class="comment-input" onkeyup="if(event.key==='Enter')postComment()"><button class="btn-sm" onclick="postComment()"><i class="fa-solid fa-paper-plane"></i></button></div>
             </div>
+        </div>
+
+        <!-- IMAGE LIGHTBOX -->
+        <div id="image-lightbox" class="image-lightbox hidden" onclick="if(event.target===this)closeLightbox()">
+            <button class="lightbox-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
+            <img id="lightbox-img" src="" alt="">
         </div>
 
         <!-- ADMIN -->
@@ -328,10 +331,10 @@
     <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
         <button onclick="goToView('home')" data-view="home" class="active"><i class="fa-solid fa-house"></i><span>Accueil</span></button>
-        <button onclick="goToView('feed')" data-view="feed"><i class="fa-solid fa-newspaper"></i><span>Feed</span></button>
+        <button onclick="goToView('feed')" data-view="feed"><i class="fa-regular fa-newspaper"></i><span>Feed</span></button>
         <button onclick="goToView('stories')" class="bottom-nav-add" data-view="stories"><i class="fa-solid fa-circle-play"></i></button>
-        <button onclick="goToView('messages')" data-view="messages"><i class="fa-solid fa-comment-dots"></i><span>Messages</span><span class="badge-count hidden" id="msg-badge-mobile">0</span></button>
-        <button onclick="goToView('profile')" data-view="profile"><i class="fa-solid fa-user"></i><span>Profil</span></button>
+        <button onclick="goToView('messages')" data-view="messages"><i class="fa-regular fa-comment-dots"></i><span>Messages</span><span class="badge-count hidden" id="msg-badge-mobile">0</span></button>
+        <button onclick="goToView('profile')" data-view="profile"><i class="fa-regular fa-user"></i><span>Profil</span></button>
     </nav>
 </div>
 
