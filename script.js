@@ -66,6 +66,7 @@ function setupNav(user){
   var ds=document.getElementById('dd-switch-role');if(ds){if(user.roles&&user.roles.length>1)ds.classList.remove('hidden');else ds.classList.add('hidden');}
   var dl=document.getElementById('dd-switch-label');if(dl){var ar=user.activeRole||user.role;dl.textContent=ar==='enseignant'?'Passer Apprenant':'Passer Enseignant';}
   var ca=document.getElementById('composer-avatar');if(ca)ca.src=av;
+  var hca=document.getElementById('home-composer-avatar');if(hca)hca.src=av;
 }
 window.toggleProfileMenu=function(){var d=document.getElementById('profile-dropdown');if(d)d.classList.toggle('hidden');};
 window.closeDD=function(){var d=document.getElementById('profile-dropdown');if(d)d.classList.add('hidden');};
@@ -97,7 +98,10 @@ window.appForcePassChange=async function(){var np=document.getElementById('force
 window.appLogout=function(){clearSession();location.reload();};
 function showPayScreen(u){var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.remove('hidden');if(sw)sw.classList.add('hidden');}
 function showWaitingScreen(){var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.add('hidden');if(sw)sw.classList.remove('hidden');}
-window.confirmPayment=async function(){var u=getSession();if(!u)return;u.paymentStatus='awaiting';await fbSetUser(u.id,{paymentStatus:'awaiting'});setSession(u);showWaitingScreen();};
+window.confirmPayment=async function(){var u=getSession();if(!u)return;u.paymentStatus='awaiting';await fbSetUser(u.id,{paymentStatus:'awaiting'});setSession(u);showWaitingScreen();
+  var msg=encodeURIComponent('Bonjour Admin, je suis '+u.name+' ('+u.phone+'), je viens de confirmer mon paiement de 1000 FCFA via Wave. Merci de valider mon compte.');
+  window.open('https://wa.me/221774599835?text='+msg,'_blank');
+};
 
 // ===== INIT REG CHIPS =====
 function initRegChips(){
@@ -173,15 +177,17 @@ function showCurrentStory(){
   var av=s.userAvatar||'';document.getElementById('sv-avatar').src=av;
   document.getElementById('sv-name').textContent=s.userName;
   document.getElementById('sv-time').textContent=timeAgo(s.createdAt);
-  document.getElementById('sv-views').innerHTML='<i class="fa-solid fa-eye"></i> '+(s.views?s.views.length:0);
+  // Views: only show count to story author
+  var cu=getSession();var svViews=document.getElementById('sv-views');
+  if(cu&&s.userId===cu.id){var uniqueViews=[];if(s.views){s.views.forEach(function(v){var uid=typeof v==='string'?v:v.userId;if(uniqueViews.indexOf(uid)===-1)uniqueViews.push(uid);});}svViews.innerHTML='<i class="fa-solid fa-eye"></i> '+uniqueViews.length;svViews.style.display='';}else{svViews.style.display='none';}
   var sc=document.getElementById('sv-content');
   if(s.type==='text')sc.innerHTML='<div class="text-story" style="background:'+(s.bgColor||'#0d6e4e')+'">'+s.text+'</div>';
   else if(s.mediaUrl){if(s.mediaType&&s.mediaType.startsWith('video/'))sc.innerHTML='<video src="'+s.mediaUrl+'" autoplay></video>';else sc.innerHTML='<img src="'+s.mediaUrl+'">';}
-  var cu=getSession();if(cu)fbAddStoryView(s.id,cu.id).catch(function(){});
+  if(cu)fbAddStoryView(s.id,cu.id).catch(function(){});
   // Progress bar
   var sp=document.getElementById('story-progress');if(sp){sp.innerHTML='';for(var i=0;i<window._viewingStories.length;i++){var d=document.createElement('div');if(i<window._storyIdx)d.classList.add('active');if(i===window._storyIdx){var fill=document.createElement('div');fill.className='fill';d.appendChild(fill);}sp.appendChild(d);}}
-  var duration=(s.type==='text'||!s.mediaType||!s.mediaType.startsWith('video/'))?5000:15000;
-  var elapsed=0;var step=50;
+  var duration=(s.type==='text'||!s.mediaType||!s.mediaType.startsWith('video/'))?60000:300000;
+  var elapsed=0;var step=100;
   window._storyInterval=setInterval(function(){elapsed+=step;var fill=document.querySelector('.story-progress .fill');if(fill)fill.style.width=(elapsed/duration*100)+'%';},step);
   window._storyTimer=setTimeout(function(){window._storyIdx++;if(window._storyIdx>=window._viewingStories.length)closeStoryViewer();else showCurrentStory();},duration);
 }
@@ -280,6 +286,24 @@ window.publishPost=async function(){
   if(fi)fi.value='';var prev=document.getElementById('post-media-preview');if(prev){prev.classList.add('hidden');prev.innerHTML='';}
   loadFeed();
 };
+// Home post composer
+window.previewHomePostMedia=function(input){
+  var prev=document.getElementById('home-post-media-preview');if(!prev)return;
+  if(input.files&&input.files[0]){prev.classList.remove('hidden');var f=input.files[0];
+    if(f.type.startsWith('video/'))prev.innerHTML='<video src="'+URL.createObjectURL(f)+'" controls style="max-height:200px;border-radius:12px;"></video>';
+    else prev.innerHTML='<img src="'+URL.createObjectURL(f)+'" style="max-height:200px;border-radius:12px;">';
+  }else{prev.classList.add('hidden');prev.innerHTML='';}
+};
+window.publishHomePost=async function(){
+  var cu=getSession();if(!cu)return;var text=(document.getElementById('home-post-text')||{}).value||'';
+  var fi=document.getElementById('home-post-media');var hasMedia=fi&&fi.files&&fi.files[0];
+  if(!text.trim()&&!hasMedia){alert('Écrivez quelque chose ou ajoutez un média.');return;}
+  var data={userId:cu.id,userName:cu.name,userAvatar:cu.avatar||'',text:text,likes:[],createdAt:new Date().toISOString()};
+  if(hasMedia){var mid='post_'+Date.now();data.mediaUrl=await fbUploadFile(mid,fi.files[0]);data.mediaType=fi.files[0].type;}
+  await fbCreatePost(data);document.getElementById('home-post-text').value='';
+  if(fi)fi.value='';var prev=document.getElementById('home-post-media-preview');if(prev){prev.classList.add('hidden');prev.innerHTML='';}
+  loadHomeData();
+};
 window.deletePost=async function(pid){if(!confirm('Supprimer ?'))return;await fbDeletePost(pid);loadFeed();};
 window.toggleLike=async function(pid,liked){var cu=getSession();if(!cu)return;if(liked)await fbUnlikePost(pid,cu.id);else await fbLikePost(pid,cu.id);loadFeed();};
 window._replyToCommentId=null;window._replyToCommentName=null;
@@ -375,17 +399,19 @@ async function renderConvList(convs){
 }
 async function openConversation(convId,otherUser){
   currentConvId=convId;var cu=getSession();var ca=document.getElementById('chat-area');if(!ca)return;
+  // Hide sidebar on mobile
+  var sidebar=document.getElementById('conv-sidebar');if(sidebar)sidebar.classList.add('conv-sidebar-hidden');
   var av=otherUser.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(otherUser.name)+'&background=0d6e4e&color=fff&size=40';
-  ca.innerHTML='<div class="chat-header"><img src="'+av+'" onclick="viewUserProfile(\''+otherUser.id+'\')"><div><strong>'+otherUser.name+'</strong><br><small>'+(otherUser.city||'')+'</small></div></div><div class="chat-messages" id="chat-messages"></div><div class="chat-attachments"><label class="chat-attach-btn" title="Photo"><i class="fa-solid fa-image"></i><input type="file" accept="image/*" class="hidden" onchange="sendFileMsg(this,\'image\')"></label><label class="chat-attach-btn" title="Vidéo"><i class="fa-solid fa-video"></i><input type="file" accept="video/*" class="hidden" onchange="sendFileMsg(this,\'video\')"></label><label class="chat-attach-btn" title="Document"><i class="fa-solid fa-paperclip"></i><input type="file" class="hidden" onchange="sendFileMsg(this,\'file\')"></label><button class="chat-attach-btn" title="Audio" onclick="recordVoice()"><i class="fa-solid fa-microphone"></i></button></div><div class="chat-input"><input type="text" id="msg-input" placeholder="Votre message..." onkeyup="if(event.key===\'Enter\')sendMessage()"><button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button></div>';
+  ca.innerHTML='<div class="chat-header"><button class="chat-back-btn" onclick="closeChatGoBack()"><i class="fa-solid fa-arrow-left"></i></button><img src="'+av+'" onclick="viewUserProfile(\''+otherUser.id+'\')"><div><strong>'+otherUser.name+'</strong><br><small>'+(otherUser.city||'')+'</small></div></div><div class="chat-messages" id="chat-messages"></div><div class="chat-attachments"><label class="chat-attach-btn" title="Photo"><i class="fa-solid fa-image"></i><input type="file" accept="image/*" class="hidden" onchange="sendFileMsg(this,\'image\')"></label><label class="chat-attach-btn" title="Vidéo"><i class="fa-solid fa-video"></i><input type="file" accept="video/*" class="hidden" onchange="sendFileMsg(this,\'video\')"></label><label class="chat-attach-btn" title="Document"><i class="fa-solid fa-paperclip"></i><input type="file" class="hidden" onchange="sendFileMsg(this,\'file\')"></label><button class="chat-attach-btn" title="Audio" onclick="recordVoice()"><i class="fa-solid fa-microphone"></i></button></div><div class="chat-input"><input type="text" id="msg-input" placeholder="Votre message..." onkeyup="if(event.key===\'Enter\')sendMessage()"><button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button></div>';
   await fbMarkAsRead(convId,cu.id);if(msgListener)msgListener();
   msgListener=fbListenMessages(convId,function(msgs){
     var mc=document.getElementById('chat-messages');if(!mc)return;mc.innerHTML='';
     for(var i=0;i<msgs.length;i++){var m=msgs[i];var cls=m.senderId===cu.id?'sent':'received';var content='';
-      if(m.type==='image')content='<img src="'+m.fileUrl+'" onclick="openLightbox(\''+m.fileUrl.replace(/'/g,"\\'")+'\')">'+((m.storyRef)?'<div style="font-size:.75rem;opacity:.7;margin-top:4px;">📖 Réponse à une story</div>':'');
+      if(m.type==='image')content='<img src="'+m.fileUrl+'" onclick="openLightbox(\''+m.fileUrl.replace(/'/g,"\\'")+'\')">'+((m.storyRef)?'<div class="story-ref-link" onclick="openStoryFromMsg(\''+m.storyRef+'\')" style="font-size:.75rem;opacity:.7;margin-top:4px;cursor:pointer;text-decoration:underline;">📖 Voir la story</div>':'');
       else if(m.type==='video')content='<video src="'+m.fileUrl+'" controls></video>';
       else if(m.type==='voice')content='<div class="voice-player"><button class="vp-play" onclick="toggleVoicePlay(this,\''+m.fileUrl.replace(/'/g,"\\'")+'\')"><i class="fa-solid fa-play"></i></button><div class="vp-track"><div class="vp-progress-wrap" onclick="seekVoice(event,this)"><div class="vp-progress-fill"></div></div><div class="vp-meta"><span class="vp-time">0:00</span><button class="vp-speed" onclick="cycleSpeed(this)">1x</button></div></div></div>';
       else if(m.type==='file')content='<div class="file-attach"><i class="fa-solid fa-file"></i><a href="'+m.fileUrl+'" target="_blank" style="color:inherit;">'+m.fileName+'</a></div>';
-      else content=(m.storyRef?'<div style="font-size:.75rem;opacity:.7;margin-bottom:4px;">📖 Réponse à une story</div>':'')+(m.text||'');
+      else content=(m.storyRef?'<div class="story-ref-link" onclick="openStoryFromMsg(\''+m.storyRef+'\')" style="font-size:.75rem;opacity:.7;margin-bottom:4px;cursor:pointer;text-decoration:underline;">📖 Voir la story</div>':'')+(m.text||'');
       var delBtn=m.senderId===cu.id?'<button class="msg-delete-btn" onclick="deleteMsg(\''+convId+'\',\''+m.id+'\')"><i class="fa-solid fa-trash"></i></button>':'';
       mc.innerHTML+='<div class="msg-bubble '+cls+'">'+content+delBtn+'<span class="msg-time">'+new Date(m.timestamp).toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'})+'</span></div>';
     }mc.scrollTop=mc.scrollHeight;
@@ -420,6 +446,8 @@ window.cycleSpeed=function(btn){var speeds=[1,1.5,2];var cur=parseFloat(btn.text
 window.switchProfileRole=async function(role){var cu=getSession();if(!cu)return;cu.activeRole=role;await fbSetUser(cu.id,{activeRole:role});setSession(cu);setupNav(cu);loadProfile();alert('Rôle actif : '+role);};
 window.startConversation=async function(otherId){var cu=getSession();if(!cu||cu.id===otherId){alert('Vous ne pouvez pas vous envoyer un message.');return;}var conv=await fbGetOrCreateConversation(cu.id,otherId);var other=await fbGetUser(otherId);if(!other)return;goToView('messages');setTimeout(function(){openConversation(conv.id,other);},300);};
 window.filterConversations=function(){var q=((document.getElementById('conv-search-input')||{}).value||'').toLowerCase();document.querySelectorAll('.conv-item').forEach(function(c){var n=c.querySelector('strong');if(n&&n.textContent.toLowerCase().indexOf(q)!==-1)c.style.display='';else c.style.display='none';});};
+window.closeChatGoBack=function(){var sidebar=document.getElementById('conv-sidebar');if(sidebar)sidebar.classList.remove('conv-sidebar-hidden');var ca=document.getElementById('chat-area');if(ca)ca.innerHTML='<div class="chat-placeholder"><i class="fa-solid fa-comments"></i><h3>Sélectionnez une conversation</h3></div>';currentConvId=null;if(msgListener){msgListener();msgListener=null;}};
+window.openStoryFromMsg=async function(storyId){try{var doc=await db.collection('stories').doc(storyId).get();if(doc.exists){var s=doc.data();window._viewingStories=[s];window._storyIdx=0;showCurrentStory();document.getElementById('story-viewer').classList.remove('hidden');}else{alert('Cette story a expiré ou a été supprimée.');}}catch(e){alert('Story introuvable.');}};
 
 // ===== PROFILE =====
 async function loadProfile(){
@@ -435,9 +463,7 @@ async function loadProfile(){
   var ts=document.getElementById('prof-teacher-section');
   if(ts){if(cu.role==='enseignant'||cu.activeRole==='enseignant'||(cu.roles&&cu.roles.indexOf('enseignant')!==-1)){ts.classList.remove('hidden');
     var bio=document.getElementById('prof-bio');if(bio)bio.value=cu.bio||'';
-    renderChips('prof-categories-grid',Object.keys(CATEGORIES),cu.categories||[],'prof-cat');
-    var allD=[];Object.keys(CATEGORIES).forEach(function(k){CATEGORIES[k].disciplines.forEach(function(d){if(allD.indexOf(d)===-1)allD.push(d);});});
-    renderChips('prof-disciplines-grid',allD,cu.disciplines||[],'prof-disc');
+    renderCatAccordion(cu);
     renderChips('prof-publics-grid',['Enfants','Adultes','Femmes','Hommes'],cu.publics||[],'prof-pub');
   }else ts.classList.add('hidden');}
   var rm=document.getElementById('roles-manager');if(rm){rm.innerHTML='';(cu.roles||[cu.role]).forEach(function(r){var isAct=r===(cu.activeRole||cu.role);rm.innerHTML+='<div class="role-card'+(isAct?' active':'')+'" onclick="switchProfileRole(\''+r+'\')" style="cursor:pointer;">'+r+(isAct?' ✓':'')+'</div>';});}
@@ -496,6 +522,15 @@ window.loadAdminData=async function(){
 window.adminSetStatus=async function(uid,s){await fbSetUser(uid,{status:s});await loadAdminData();};
 window.adminValidatePayment=async function(uid){await fbSetUser(uid,{paymentStatus:'paid',paymentDate:new Date().toISOString(),status:'active'});alert('Validé !');await loadAdminData();};
 window.adminDeleteUser=async function(uid){if(!confirm('Supprimer ?'))return;await fbDeleteUser(uid);alert('Supprimé.');await loadAdminData();};
+window.adminWhatsAppBroadcast=async function(){
+  var msg=prompt('Entrez le message collectif à envoyer via WhatsApp :');if(!msg)return;
+  var users=await fbGetAllUsers();var phones=[];
+  for(var i=0;i<users.length;i++){if(users[i].role!=='admin'&&users[i].phone&&users[i].phone.startsWith('+'))phones.push(users[i].phone);}
+  if(phones.length===0){alert('Aucun abonné avec numéro.');return;}
+  var encoded=encodeURIComponent(msg);
+  for(var i=0;i<phones.length;i++){var num=phones[i].replace(/[^0-9]/g,'');window.open('https://wa.me/'+num+'?text='+encoded,'_blank');}
+  alert(phones.length+' onglets WhatsApp ouverts.');
+};
 
 // ===== UNREAD BADGE COUNTER =====
 var unreadBadgeListener=null;
@@ -509,3 +544,34 @@ function startUnreadBadgeListener(){
     var nb=document.getElementById('notif-badge');if(nb){if(total>0){nb.textContent=total>99?'99+':total;nb.classList.remove('hidden');}else{nb.classList.add('hidden');}}
   });
 }
+
+// ===== PROFILE CATEGORY ACCORDION =====
+function renderCatAccordion(cu){
+  var container=document.getElementById('prof-cat-accordion');if(!container)return;container.innerHTML='';
+  var selCats=cu.categories||[];var selDiscs=cu.disciplines||[];
+  Object.keys(CATEGORIES).forEach(function(k){
+    var c=CATEGORIES[k];var isCatSel=selCats.indexOf(k)!==-1;
+    var discHtml='';c.disciplines.forEach(function(d){var ch=selDiscs.indexOf(d)!==-1?'checked':'';discHtml+='<label class="chip-check"><input type="checkbox" class="prof-disc" value="'+d+'" '+ch+'> '+d+'</label>';});
+    container.innerHTML+='<div class="cat-accordion-item"><div class="cat-accordion-header" onclick="toggleCatAccordion(this)"><div style="display:flex;align-items:center;gap:8px;"><input type="checkbox" class="cat-check prof-cat" value="'+k+'" '+(isCatSel?'checked':'')+' onclick="event.stopPropagation()"><span>'+k+'</span></div><i class="fa-solid fa-chevron-down"></i></div><div class="cat-accordion-body"><div class="chip-grid">'+discHtml+'</div></div></div>';
+  });
+}
+window.toggleCatAccordion=function(header){
+  header.classList.toggle('open');
+  var body=header.nextElementSibling;if(body)body.classList.toggle('open');
+};
+
+// ===== LANGUAGE SYSTEM =====
+var LANGS={fr:{hero_sub:'La plateforme éducative qui connecte enseignants et apprenants.',find_teacher:'Trouver un enseignant',categories:'Catégories',news_feed:"Fil d'actualité",discover_teachers:'Enseignants à découvrir'},en:{hero_sub:'The educational platform connecting teachers and learners.',find_teacher:'Find a teacher',categories:'Categories',news_feed:'News Feed',discover_teachers:'Teachers to discover'},ar:{hero_sub:'المنصة التعليمية التي تربط المعلمين والمتعلمين.',find_teacher:'ابحث عن معلم',categories:'الفئات',news_feed:'آخر الأخبار',discover_teachers:'معلمون للاكتشاف'}};
+var LANG_ORDER=['fr','en','ar'];
+window.cycleLang=function(){
+  var cur=localStorage.getItem('tla_lang')||'fr';
+  var idx=LANG_ORDER.indexOf(cur);var next=LANG_ORDER[(idx+1)%LANG_ORDER.length];
+  localStorage.setItem('tla_lang',next);applyLang(next);
+  var lb=document.getElementById('lang-btn');if(lb)lb.title=next.toUpperCase();
+};
+function applyLang(lang){
+  var t=LANGS[lang]||LANGS.fr;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){var key=el.getAttribute('data-i18n');if(t[key])el.textContent=t[key];});
+  if(lang==='ar')document.body.style.direction='rtl';else document.body.style.direction='ltr';
+}
+setTimeout(function(){applyLang(localStorage.getItem('tla_lang')||'fr');},600);

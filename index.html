@@ -101,6 +101,7 @@
                 <button class="nav-icon-btn" onclick="goToView('messages')" title="Messages" data-view="messages"><i class="fa-regular fa-comment-dots"></i><span class="badge-count hidden" id="msg-badge">0</span></button>
                 <button class="nav-icon-btn" onclick="goToView('notifications')" title="Notifications" data-view="notifications"><i class="fa-regular fa-bell"></i><span class="badge-count hidden" id="notif-badge">0</span></button>
                 <button class="nav-icon-btn" onclick="toggleDarkMode()" title="Mode sombre" id="dark-mode-btn"><i class="fa-solid fa-moon"></i></button>
+                <button class="nav-icon-btn" onclick="cycleLang()" title="Langue" id="lang-btn"><i class="fa-solid fa-globe"></i></button>
                 <div class="nav-profile-wrap">
                     <button class="nav-avatar-btn" onclick="toggleProfileMenu()"><img id="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=0d6e4e&color=fff&size=40" alt=""><span class="online-dot"></span></button>
                     <div class="profile-dropdown hidden" id="profile-dropdown">
@@ -139,20 +140,31 @@
             <section class="hero-section">
                 <div class="hero-inner">
                     <h1 id="hero-welcome">Bienvenue sur <span class="gradient-text">Tilawah Link Academy</span></h1>
-                    <p class="hero-sub">La plateforme éducative qui connecte enseignants et apprenants.</p>
+                    <p class="hero-sub" data-i18n="hero_sub">La plateforme éducative qui connecte enseignants et apprenants.</p>
                     <div class="hero-actions">
-                        <button class="btn-main btn-lg" onclick="goToView('teachers')"><i class="fa-solid fa-search"></i> Trouver un enseignant</button>
-                        <button class="btn-outline-main btn-lg" onclick="goToView('categories')"><i class="fa-solid fa-grid-2"></i> Catégories</button>
+                        <button class="btn-main btn-lg" onclick="goToView('teachers')"><i class="fa-solid fa-search"></i> <span data-i18n="find_teacher">Trouver un enseignant</span></button>
+                        <button class="btn-outline-main btn-lg" onclick="goToView('categories')"><i class="fa-solid fa-th-large"></i> <span data-i18n="categories">Catégories</span></button>
                     </div>
+                </div>
+            </section>
+            <!-- Home Post Composer -->
+            <section class="section">
+                <div class="post-composer">
+                    <div class="composer-header"><img id="home-composer-avatar" src="" class="composer-av"><textarea id="home-post-text" placeholder="Quoi de neuf ? Partagez quelque chose..."></textarea></div>
+                    <div class="composer-actions">
+                        <label class="composer-btn"><i class="fa-solid fa-image"></i> Photo<input type="file" id="home-post-media" accept="image/*,video/*" class="hidden" onchange="previewHomePostMedia(this)"></label>
+                        <button class="btn-main btn-sm" onclick="publishHomePost()"><i class="fa-solid fa-paper-plane"></i> Publier</button>
+                    </div>
+                    <div id="home-post-media-preview" class="hidden"></div>
                 </div>
             </section>
             <!-- Feed preview -->
             <section class="section">
-                <div class="section-header"><h2>Fil d'actualité</h2><a href="#" onclick="goToView('feed');return false">Voir tout <i class="fa-solid fa-arrow-right"></i></a></div>
+                <div class="section-header"><h2 data-i18n="news_feed">Fil d'actualité</h2><a href="#" onclick="goToView('feed');return false">Voir tout <i class="fa-solid fa-arrow-right"></i></a></div>
                 <div id="home-feed"></div>
             </section>
             <section class="section">
-                <div class="section-header"><h2>Enseignants à découvrir</h2><a href="#" onclick="goToView('teachers');return false">Voir tout <i class="fa-solid fa-arrow-right"></i></a></div>
+                <div class="section-header"><h2 data-i18n="discover_teachers">Enseignants à découvrir</h2><a href="#" onclick="goToView('teachers');return false">Voir tout <i class="fa-solid fa-arrow-right"></i></a></div>
                 <div class="teachers-grid" id="home-teachers"></div>
             </section>
         </div>
@@ -253,7 +265,7 @@
                     </div>
                     <div class="profile-section"><h3>Mes rôles</h3><div class="roles-manager" id="roles-manager"></div></div>
                     <div id="prof-teacher-section" class="hidden">
-                        <div class="profile-section"><h3>Catégories & disciplines</h3><div class="chip-grid" id="prof-categories-grid"></div><div class="chip-grid mt-2" id="prof-disciplines-grid"></div></div>
+                        <div class="profile-section"><h3>Catégories & disciplines</h3><div id="prof-cat-accordion"></div></div>
                         <div class="profile-section"><h3>Public visé</h3><div class="chip-grid" id="prof-publics-grid"></div></div>
                         <div class="profile-section"><h3>Présentation</h3><textarea id="prof-bio" rows="4" placeholder="Décrivez votre parcours..."></textarea></div>
                     </div>
@@ -320,7 +332,7 @@
 
         <!-- ADMIN -->
         <div id="v-admin" class="view-page hidden">
-            <div class="page-header admin-header-bg"><h1><i class="fa-solid fa-shield"></i> Administration</h1><button class="btn-outline-light" onclick="goToView('home')"><i class="fa-solid fa-home"></i> Retour</button></div>
+            <div class="page-header admin-header-bg"><h1><i class="fa-solid fa-shield"></i> Administration</h1><div style="display:flex;gap:8px;"><button class="btn-outline-light" onclick="adminWhatsAppBroadcast()"><i class="fa-brands fa-whatsapp"></i> Message collectif</button><button class="btn-outline-light" onclick="goToView('home')"><i class="fa-solid fa-home"></i> Retour</button></div></div>
             <div class="admin-stats" id="admin-stats"></div>
             <div class="admin-section"><h2>Gestion des Utilisateurs</h2>
                 <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Nom</th><th>Rôle</th><th>Téléphone</th><th>Ville</th><th>Statut</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="admin-tbody"></tbody></table></div>
