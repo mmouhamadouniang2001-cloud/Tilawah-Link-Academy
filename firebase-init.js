@@ -229,8 +229,17 @@ async function fbGetPosts(limit){
   var arr=[];snap.forEach(function(d){var p=d.data();p.id=d.id;arr.push(p);});return arr;
 }
 async function fbGetUserPosts(userId){
-  var snap=await db.collection('posts').where('userId','==',userId).orderBy('createdAt','desc').get();
-  var arr=[];snap.forEach(function(d){var p=d.data();p.id=d.id;arr.push(p);});return arr;
+  var arr=[];
+  try{
+    var snap=await db.collection('posts').where('userId','==',userId).orderBy('createdAt','desc').get();
+    snap.forEach(function(d){var p=d.data();p.id=d.id;arr.push(p);});
+  }catch(e){
+    console.warn('fbGetUserPosts index fallback:',e.message);
+    var snap2=await db.collection('posts').where('userId','==',userId).get();
+    snap2.forEach(function(d){var p=d.data();p.id=d.id;arr.push(p);});
+    arr.sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
+  }
+  return arr;
 }
 async function fbDeletePost(postId){await db.collection('posts').doc(postId).delete();}
 async function fbLikePost(postId,userId){

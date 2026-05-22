@@ -468,10 +468,14 @@ async function loadProfile(){
   }else ts.classList.add('hidden');}
   var rm=document.getElementById('roles-manager');if(rm){rm.innerHTML='';(cu.roles||[cu.role]).forEach(function(r){var isAct=r===(cu.activeRole||cu.role);rm.innerHTML+='<div class="role-card'+(isAct?' active':'')+'" onclick="switchProfileRole(\''+r+'\')" style="cursor:pointer;">'+r+(isAct?' ✓':'')+'</div>';});}
   // My posts
-  var mp=document.getElementById('my-posts');if(mp){var posts=await fbGetUserPosts(cu.id);mp.innerHTML='';
-    if(posts.length===0)mp.innerHTML='<p class="empty-msg">Aucune publication.</p>';
-    else for(var i=0;i<posts.length;i++)mp.innerHTML+=renderPostCard(posts[i],cu);
-    var pc=document.getElementById('prof-posts-count');if(pc)pc.textContent=posts.length;
+  var mp=document.getElementById('my-posts');if(mp){
+    mp.innerHTML='<p class="text-muted text-center">Chargement des publications...</p>';
+    try{
+      var posts=await fbGetUserPosts(cu.id);mp.innerHTML='';
+      if(posts.length===0)mp.innerHTML='<p class="empty-msg">Aucune publication.</p>';
+      else for(var i=0;i<posts.length;i++)mp.innerHTML+=renderPostCard(posts[i],cu);
+      var pc=document.getElementById('prof-posts-count');if(pc)pc.textContent=posts.length;
+    }catch(err){console.error('Erreur chargement publications:',err);mp.innerHTML='<p class="empty-msg" style="color:red;">Erreur de chargement des publications.</p>';}
   }
 }
 function renderChips(cid,opts,sel,pfx){var c=document.getElementById(cid);if(!c)return;c.innerHTML='';for(var i=0;i<opts.length;i++){var ch=sel.indexOf(opts[i])!==-1?'checked':'';c.innerHTML+='<label class="chip-check"><input type="checkbox" class="'+pfx+'" value="'+opts[i]+'" '+ch+'> '+opts[i]+'</label>';}}
