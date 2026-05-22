@@ -226,11 +226,11 @@ async function fbCreatePost(data){
 }
 async function fbGetPosts(limit){
   var snap=await db.collection('posts').orderBy('createdAt','desc').limit(limit||50).get();
-  var arr=[];snap.forEach(function(d){arr.push(d.data());});return arr;
+  var arr=[];snap.forEach(function(d){var p=d.data();p.id=d.id;arr.push(p);});return arr;
 }
 async function fbGetUserPosts(userId){
   var snap=await db.collection('posts').where('userId','==',userId).orderBy('createdAt','desc').get();
-  var arr=[];snap.forEach(function(d){arr.push(d.data());});return arr;
+  var arr=[];snap.forEach(function(d){var p=d.data();p.id=d.id;arr.push(p);});return arr;
 }
 async function fbDeletePost(postId){await db.collection('posts').doc(postId).delete();}
 async function fbLikePost(postId,userId){
