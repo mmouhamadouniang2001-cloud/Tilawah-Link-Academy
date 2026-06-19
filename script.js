@@ -96,8 +96,19 @@ window.appLogin=async function(){var id=document.getElementById('login-id').valu
 window.appForgotPass=async function(){var phone=document.getElementById('forgot-phone').value.trim();var u=await fbFindByPhone(phone);if(u){alert("Mot de passe réinitialisé à '1234'.");await fbSetUser(u.id,{password:'1234',needsPasswordChange:true});switchAuth('login');}else{alert("Numéro introuvable.");}};
 window.appForcePassChange=async function(){var np=document.getElementById('force-new-pass').value;if(np.length<4){alert("Min 4 caractères.");return;}var cu=getSession();await fbSetUser(cu.id,{password:np,needsPasswordChange:false});cu.password=np;cu.needsPasswordChange=false;setSession(cu);await refreshInterface();};
 window.appLogout=function(){clearSession();location.reload();};
-function showPayScreen(u){var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.remove('hidden');if(sw)sw.classList.add('hidden');}
-function showWaitingScreen(){var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.add('hidden');if(sw)sw.classList.remove('hidden');}
+function showPayScreen(u){var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.remove('hidden');if(sw)sw.classList.add('hidden');if(window._waitingPoll){clearInterval(window._waitingPoll);window._waitingPoll=null;}}
+function showWaitingScreen(){
+  var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.add('hidden');if(sw)sw.classList.remove('hidden');
+  if(window._waitingPoll)clearInterval(window._waitingPoll);
+  window._waitingPoll=setInterval(async function(){
+    var cu=getSession();if(!cu)return;
+    var fresh=await fbGetUser(cu.id);
+    if(fresh&&fresh.status==='active'&&fresh.paymentStatus==='paid'){
+      clearInterval(window._waitingPoll);window._waitingPoll=null;
+      setSession(fresh);await refreshInterface();
+    }
+  },10000);
+}
 window.confirmPayment=async function(){var u=getSession();if(!u)return;u.paymentStatus='awaiting';await fbSetUser(u.id,{paymentStatus:'awaiting'});setSession(u);showWaitingScreen();
   var msg=encodeURIComponent('Bonjour Admin, je suis '+u.name+' ('+u.phone+'), je viens de confirmer mon paiement de 1000 FCFA via Wave. Merci de valider mon compte.');
   window.open('https://wa.me/221774599835?text='+msg,'_blank');
@@ -415,6 +426,8 @@ async function openConversation(convId,otherUser){
       var delBtn=m.senderId===cu.id?'<button class="msg-delete-btn" onclick="deleteMsg(\''+convId+'\',\''+m.id+'\')"><i class="fa-solid fa-trash"></i></button>':'';
       mc.innerHTML+='<div class="msg-bubble '+cls+'">'+content+delBtn+'<span class="msg-time">'+new Date(m.timestamp).toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'})+'</span></div>';
     }mc.scrollTop=mc.scrollHeight;
+    // Re-mark as read when new messages arrive while conversation is open
+    fbMarkAsRead(convId,cu.id).catch(function(){});
   });
 }
 window.sendMessage=async function(){var input=document.getElementById('msg-input');if(!input||!input.value.trim())return;var cu=getSession();if(!cu||!currentConvId)return;var doc=await db.collection('conversations').doc(currentConvId).get();if(!doc.exists)return;var conv=doc.data();var rid=conv.participants[0]===cu.id?conv.participants[1]:conv.participants[0];await fbSendMessage(currentConvId,{text:input.value.trim(),senderId:cu.id,recipientId:rid,timestamp:new Date().toISOString(),type:'text'});input.value='';};
