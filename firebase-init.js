@@ -1,4 +1,4 @@
-// AfroEduLink - Firebase Data Layer
+// AfroEduLink - Firebase Data Layer (Secured)
 firebase.initializeApp({
   apiKey:"AIzaSyD-ZZFRkeldSPlsRs6UqIylwNfaojWTZTc",
   authDomain:"tilawah-link-academy.firebaseapp.com",
@@ -9,11 +9,66 @@ firebase.initializeApp({
 });
 var db = firebase.firestore();
 var storage = firebase.storage();
+var auth = firebase.auth();
 
 // ===== SESSION =====
 function getSession(){try{return JSON.parse(localStorage.getItem('ael_session'));}catch(e){return null;}}
-function setSession(u){localStorage.setItem('ael_session',JSON.stringify(u));}
+function setSession(u){
+  // Ne jamais stocker le mot de passe dans la session
+  var safe = Object.assign({}, u);
+  delete safe.password;
+  localStorage.setItem('ael_session', JSON.stringify(safe));
+}
 function clearSession(){localStorage.removeItem('ael_session');}
+
+// ===== SÉCURITÉ : HACHAGE DE MOT DE PASSE =====
+var HASH_SALT = 'TLA_SECURE_2024_SALT';
+
+async function hashPassword(password) {
+  var encoder = new TextEncoder();
+  var data = encoder.encode(password + HASH_SALT);
+  var hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  var hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+// Vérifie si un mot de passe est déjà haché (64 caractères hexadécimaux)
+function isHashed(password) {
+  return typeof password === 'string' && password.length === 64 && /^[0-9a-f]+$/.test(password);
+}
+
+// ===== FIREBASE AUTH =====
+async function fbAuthSignIn() {
+  try {
+    if (!auth.currentUser) {
+      await auth.signInAnonymously();
+    }
+  } catch(e) {
+    console.error('Firebase Auth sign-in error:', e);
+    if (e.code === 'auth/operation-not-allowed') {
+      throw new Error("L'authentification anonyme n'est pas activée. Allez dans Firebase Console → Authentication → Sign-in method → Anonymous → Activer.");
+    }
+    throw new Error("Erreur d'authentification Firebase: " + e.message);
+  }
+}
+
+async function fbAuthSignOut() {
+  try {
+    await auth.signOut();
+  } catch(e) {
+    console.warn('Firebase Auth sign-out error:', e);
+  }
+}
+
+// Attendre que Firebase Auth soit prêt
+function fbAuthReady() {
+  return new Promise(function(resolve) {
+    var unsubscribe = auth.onAuthStateChanged(function(user) {
+      unsubscribe();
+      resolve(user);
+    });
+  });
+}
 
 // ===== CATEGORIES =====
 var CATEGORIES = {
@@ -47,23 +102,67 @@ async function fbFindByPhone(phone){
   if(snap.empty)return null;
   var r=null;snap.forEach(function(d){r=d.data();});return r;
 }
-// FIX: Login no longer uses compound query (no composite index needed)
-async function fbFindByLogin(id,pass){
-  try{
-    var snap=await db.collection('users').where('phone','==',id).get();
-    if(!snap.empty){
-      var user=null;
-      snap.forEach(function(d){var u=d.data();if(u.password===pass)user=u;});
-      if(user)return user;
+
+// LOGIN SÉCURISÉ : comparaison par hash + migration automatique des mots de passe en clair
+async function fbFindByLogin(id, pass) {
+  try {
+    var hashedPass = await hashPassword(pass);
+
+    // Chercher par téléphone
+    var snap = await db.collection('users').where('phone', '==', id).get();
+    if (!snap.empty) {
+      var user = null;
+      var needsMigration = false;
+      snap.forEach(function(d) {
+        var u = d.data();
+        if (u.password === hashedPass) {
+          // Mot de passe haché correspond
+          user = u;
+        } else if (!isHashed(u.password) && u.password === pass) {
+          // Ancien mot de passe en clair — migration nécessaire
+          user = u;
+          needsMigration = true;
+        }
+      });
+      if (user) {
+        if (needsMigration) {
+          await fbSetUser(user.id, { password: hashedPass });
+          user.password = hashedPass;
+          console.log('Migration mot de passe effectuée pour:', user.id);
+        }
+        return user;
+      }
     }
-    snap=await db.collection('users').where('email','==',id).get();
-    if(!snap.empty){
-      var user=null;
-      snap.forEach(function(d){var u=d.data();if(u.password===pass)user=u;});
-      if(user)return user;
+
+    // Chercher par email
+    snap = await db.collection('users').where('email', '==', id).get();
+    if (!snap.empty) {
+      var user = null;
+      var needsMigration = false;
+      snap.forEach(function(d) {
+        var u = d.data();
+        if (u.password === hashedPass) {
+          user = u;
+        } else if (!isHashed(u.password) && u.password === pass) {
+          user = u;
+          needsMigration = true;
+        }
+      });
+      if (user) {
+        if (needsMigration) {
+          await fbSetUser(user.id, { password: hashedPass });
+          user.password = hashedPass;
+          console.log('Migration mot de passe effectuée pour:', user.id);
+        }
+        return user;
+      }
     }
+
     return null;
-  }catch(e){console.error('Login error:',e);return null;}
+  } catch(e) {
+    console.error('Login error:', e);
+    return null;
+  }
 }
 
 // ===== MEDIA =====
@@ -280,11 +379,21 @@ async function fbIsFavorite(userId,itemId){
 
 // ===== INIT =====
 async function initFirebaseDB(){
+  // S'authentifier avec Firebase Auth d'abord
+  await fbAuthSignIn();
+
   var admin=await fbGetUser('admin');
   if(!admin){
+    // Créer le compte admin avec mot de passe haché
+    var hashedAdminPass = await hashPassword('admin');
     await fbSetUser('admin',{id:'admin',role:'admin',roles:['admin'],activeRole:'admin',
-      name:'Administrateur',email:'admin@tilawahlink.academy',phone:'admin',password:'admin',
+      name:'Administrateur',email:'admin@tilawahlink.academy',phone:'admin',password:hashedAdminPass,
       status:'active',city:'Dakar',categories:[],disciplines:[],publics:[],bio:'',avatar:'',
       followers:[],following:[],isOnline:false,lastSeen:'',createdAt:new Date().toISOString()});
+  } else if (!isHashed(admin.password)) {
+    // Migrer le mot de passe admin en clair vers un hash
+    var hashedAdminPass = await hashPassword(admin.password);
+    await fbSetUser('admin', { password: hashedAdminPass });
+    console.log('Mot de passe admin migré vers hash.');
   }
 }

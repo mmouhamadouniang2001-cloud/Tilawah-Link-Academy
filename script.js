@@ -4,6 +4,8 @@ window.onunhandledrejection=function(e){console.error('Unhandled:',e.reason);};
 document.addEventListener("DOMContentLoaded",async function(){
   try{
     if(localStorage.getItem('tla_dark')==='true')document.body.classList.add('dark');
+    // Attendre que Firebase Auth soit prêt avant toute opération
+    await fbAuthReady();
     await initFirebaseDB();await refreshInterface();
   }catch(e){alert('Erreur Firebase: '+e.message);console.error(e);}
   finally{hideLoader();}
@@ -42,6 +44,8 @@ window.goToView=function(name){
 window.refreshInterface=async function(){
   hideAllViews();var user=getSession();
   if(!user){document.getElementById('view-auth').classList.remove('hidden');switchAuth('login');hideLoader();return;}
+  // S'assurer que Firebase Auth est actif
+  await fbAuthSignIn();
   var fresh=await fbGetUser(user.id);if(fresh){user=fresh;setSession(user);}
   if(user.needsPasswordChange){document.getElementById('view-auth').classList.remove('hidden');switchAuth('force-pass');hideLoader();return;}
   if(user.role==='admin'||user.activeRole==='admin'){
@@ -81,21 +85,66 @@ window.selectRole=function(r){document.querySelectorAll('.role-opt').forEach(fun
 window.appRegister=async function(){
   var role=document.getElementById('reg-role').value,name=document.getElementById('reg-name').value.trim(),phone=document.getElementById('reg-phone').value.trim(),city=document.getElementById('reg-city').value.trim(),pass=document.getElementById('reg-pass').value;
   if(!name||!phone||!city||!pass){alert("Remplissez tous les champs.");return;}
+  if(pass.length<4){alert("Le mot de passe doit contenir au moins 4 caractères.");return;}
   var categories=[],disciplines=[],pubs=[];
   if(role==='enseignant'||role==='both'){
     document.querySelectorAll('#reg-categories-grid .chip-check input:checked').forEach(function(c){categories.push(c.value);});
     document.querySelectorAll('#reg-disciplines-grid .chip-check input:checked').forEach(function(c){disciplines.push(c.value);});
     document.querySelectorAll('.reg-public:checked').forEach(function(c){pubs.push(c.value);});
   }
+  // S'authentifier avec Firebase Auth
+  await fbAuthSignIn();
   var ex=await fbFindByPhone(phone);if(ex){alert("Numéro déjà inscrit.");return;}
+  // Hacher le mot de passe avant de le stocker
+  var hashedPass=await hashPassword(pass);
   var roles=role==='both'?['apprenant','enseignant']:[role];
-  var u={id:'u_'+Date.now(),role:role==='both'?'enseignant':role,roles:roles,activeRole:role==='both'?'apprenant':role,name:name,phone:phone,city:city,password:pass,status:(role==='enseignant'||role==='both'?'pending':'active'),categories:categories,disciplines:disciplines,publics:pubs,bio:'',avatar:'',paymentStatus:'',paymentDate:'',followers:[],following:[],isOnline:false,lastSeen:'',createdAt:new Date().toISOString()};
+  var u={id:'u_'+Date.now(),role:role==='both'?'enseignant':role,roles:roles,activeRole:role==='both'?'apprenant':role,name:name,phone:phone,city:city,password:hashedPass,status:(role==='enseignant'||role==='both'?'pending':'active'),categories:categories,disciplines:disciplines,publics:pubs,bio:'',avatar:'',paymentStatus:'',paymentDate:'',followers:[],following:[],isOnline:false,lastSeen:'',createdAt:new Date().toISOString()};
   await fbSetUser(u.id,u);setSession(u);await refreshInterface();
 };
-window.appLogin=async function(){var id=document.getElementById('login-id').value.trim(),pass=document.getElementById('login-pass').value;if(!id||!pass){alert("Remplissez vos identifiants.");return;}var found=await fbFindByLogin(id,pass);if(found){if(found.status==='blocked'){alert("Compte bloqué.");return;}setSession(found);await refreshInterface();}else{alert("Identifiants incorrects.");}};
-window.appForgotPass=async function(){var phone=document.getElementById('forgot-phone').value.trim();var u=await fbFindByPhone(phone);if(u){alert("Mot de passe réinitialisé à '1234'.");await fbSetUser(u.id,{password:'1234',needsPasswordChange:true});switchAuth('login');}else{alert("Numéro introuvable.");}};
-window.appForcePassChange=async function(){var np=document.getElementById('force-new-pass').value;if(np.length<4){alert("Min 4 caractères.");return;}var cu=getSession();await fbSetUser(cu.id,{password:np,needsPasswordChange:false});cu.password=np;cu.needsPasswordChange=false;setSession(cu);await refreshInterface();};
-window.appLogout=function(){clearSession();location.reload();};
+window.appLogin=async function(){
+  var id=document.getElementById('login-id').value.trim(),pass=document.getElementById('login-pass').value;
+  if(!id||!pass){alert("Remplissez vos identifiants.");return;}
+  // S'authentifier avec Firebase Auth d'abord
+  await fbAuthSignIn();
+  var found=await fbFindByLogin(id,pass);
+  if(found){
+    if(found.status==='blocked'){alert("Compte bloqué.");return;}
+    setSession(found);
+    await refreshInterface();
+  }else{
+    alert("Identifiants incorrects.");
+  }
+};
+window.appForgotPass=async function(){
+  var phone=document.getElementById('forgot-phone').value.trim();
+  // S'authentifier pour pouvoir écrire dans Firestore
+  await fbAuthSignIn();
+  var u=await fbFindByPhone(phone);
+  if(u){
+    // Hacher le mot de passe temporaire
+    var hashedResetPass=await hashPassword('1234');
+    alert("Mot de passe réinitialisé à '1234'.");
+    await fbSetUser(u.id,{password:hashedResetPass,needsPasswordChange:true});
+    switchAuth('login');
+  }else{alert("Numéro introuvable.");}
+};
+window.appForcePassChange=async function(){
+  var np=document.getElementById('force-new-pass').value;
+  if(np.length<4){alert("Min 4 caractères.");return;}
+  var cu=getSession();
+  // Hacher le nouveau mot de passe
+  var hashedPass=await hashPassword(np);
+  await fbSetUser(cu.id,{password:hashedPass,needsPasswordChange:false});
+  cu.needsPasswordChange=false;
+  setSession(cu);
+  await refreshInterface();
+};
+window.appLogout=async function(){
+  // Déconnexion Firebase Auth + nettoyage session
+  await fbAuthSignOut();
+  clearSession();
+  location.reload();
+};
 function showPayScreen(u){var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.remove('hidden');if(sw)sw.classList.add('hidden');if(window._waitingPoll){clearInterval(window._waitingPoll);window._waitingPoll=null;}}
 function showWaitingScreen(){
   var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.add('hidden');if(sw)sw.classList.remove('hidden');
