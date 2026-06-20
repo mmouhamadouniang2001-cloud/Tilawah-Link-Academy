@@ -62,31 +62,6 @@
     </div>
 </div>
 
-<!-- ========== PAYMENT ========== -->
-<div id="view-payment" class="hidden">
-    <div class="payment-view">
-        <div class="payment-card">
-            <div id="pay-screen-pay">
-                <div class="payment-icon"><i class="fa-solid fa-wallet"></i></div>
-                <h2 id="pay-title">Activation de votre compte</h2>
-                <p class="mt-1" id="pay-msg">Effectuez votre paiement de <strong>1 000 FCFA</strong> via Wave.</p>
-                <div class="payment-details">
-                    <p>📱 Envoyez <strong>1 000 FCFA</strong> via Wave au :</p>
-                    <h1 class="wave-number">+221 77 459 98 35</h1>
-                    <a href="https://pay.wave.com/m/M_OfMBJ3d3dT/c/SN/?amount=1000" target="_blank" class="btn-wave w-full"><i class="fa-solid fa-money-bill-wave"></i> Ouvrir Wave</a>
-                </div>
-                <button class="btn-main w-full mt-2" onclick="confirmPayment()"><i class="fa-solid fa-check-circle"></i> J'ai payé</button>
-                <button class="btn-ghost w-full mt-1" onclick="appLogout()">Se déconnecter</button>
-            </div>
-            <div id="pay-screen-waiting" class="hidden">
-                <div class="payment-icon waiting"><i class="fa-solid fa-hourglass-half"></i></div>
-                <h2>Paiement en vérification</h2>
-                <p class="mt-1">L'administrateur va vérifier et valider votre compte.</p>
-                <button class="btn-ghost w-full mt-2" onclick="appLogout()">Se déconnecter</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- ========== PLATFORM ========== -->
 <div id="view-platform" class="hidden">
@@ -335,7 +310,7 @@
             <div class="page-header admin-header-bg"><h1><i class="fa-solid fa-shield"></i> Administration</h1><div style="display:flex;gap:8px;"><button class="btn-outline-light" onclick="adminWhatsAppBroadcast()"><i class="fa-brands fa-whatsapp"></i> Message collectif</button><button class="btn-outline-light" onclick="goToView('home')"><i class="fa-solid fa-home"></i> Retour</button></div></div>
             <div class="admin-stats" id="admin-stats"></div>
             <div class="admin-section"><h2>Gestion des Utilisateurs</h2>
-                <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Nom</th><th>Rôle</th><th>Téléphone</th><th>Ville</th><th>Statut</th><th>Paiement</th><th>Actions</th></tr></thead><tbody id="admin-tbody"></tbody></table></div>
+                <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Nom</th><th>Rôle</th><th>Téléphone</th><th>Ville</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="admin-tbody"></tbody></table></div>
             </div>
         </div>
     </main>
