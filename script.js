@@ -566,14 +566,36 @@ window.loadAdminData=async function(){
 };
 window.adminSetStatus=async function(uid,s){await fbSetUser(uid,{status:s});await loadAdminData();};
 window.adminDeleteUser=async function(uid){if(!confirm('Supprimer ?'))return;await fbDeleteUser(uid);alert('Supprimé.');await loadAdminData();};
-window.adminWhatsAppBroadcast=async function(){
-  var msg=prompt('Entrez le message collectif à envoyer via WhatsApp :');if(!msg)return;
-  var users=await fbGetAllUsers();var phones=[];
-  for(var i=0;i<users.length;i++){if(users[i].role!=='admin'&&users[i].phone&&users[i].phone.startsWith('+'))phones.push(users[i].phone);}
-  if(phones.length===0){alert('Aucun abonné avec numéro.');return;}
-  var encoded=encodeURIComponent(msg);
-  for(var i=0;i<phones.length;i++){var num=phones[i].replace(/[^0-9]/g,'');window.open('https://wa.me/'+num+'?text='+encoded,'_blank');}
-  alert(phones.length+' onglets WhatsApp ouverts.');
+window.adminBroadcastMessage=async function(){
+  var msg=prompt('Entrez le message collectif à envoyer à tous les utilisateurs :');
+  if(!msg||!msg.trim())return;
+  var cu=getSession();if(!cu)return;
+  var users=await fbGetAllUsers();
+  var count=0;
+  for(var i=0;i<users.length;i++){
+    var u=users[i];
+    if(u.id===cu.id||u.role==='admin')continue;
+    try{
+      // Créer ou récupérer la conversation avec cet utilisateur
+      var conv=await fbGetOrCreateConversation(cu.id,u.id);
+      // Envoyer le message
+      await fbSendMessage(conv.id,{
+        text:'📢 '+msg,
+        senderId:cu.id,
+        recipientId:u.id,
+        timestamp:new Date().toISOString(),
+        type:'text'
+      });
+      // Ajouter une notification
+      await fbAddNotification(u.id,{
+        text:'📢 Message de l\'administrateur : '+msg.substring(0,80)+(msg.length>80?'...':''),
+        icon:'fa-bullhorn',
+        type:'broadcast'
+      });
+      count++;
+    }catch(e){console.error('Erreur envoi à',u.name,e);}
+  }
+  alert('Message envoyé à '+count+' utilisateur'+(count>1?'s':'')+'.');
 };
 
 // ===== UNREAD BADGE COUNTER =====
