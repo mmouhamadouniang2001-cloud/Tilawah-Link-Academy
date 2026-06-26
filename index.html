@@ -97,6 +97,7 @@
     <div class="mobile-menu hidden" id="mobile-menu">
         <a href="#" onclick="goToView('home');closeMM();return false"><i class="fa-solid fa-house"></i> Accueil</a>
         <a href="#" onclick="goToView('categories');closeMM();return false"><i class="fa-solid fa-grid-2"></i> Catégories</a>
+        <a href="#" onclick="goToView('discover');closeMM();return false"><i class="fa-solid fa-compass"></i> Découvrir</a>
         <a href="#" onclick="goToView('feed');closeMM();return false"><i class="fa-solid fa-newspaper"></i> Publications</a>
         <a href="#" onclick="goToView('messages');closeMM();return false"><i class="fa-solid fa-comment-dots"></i> Messages</a>
         <a href="#" onclick="goToView('favorites');closeMM();return false"><i class="fa-solid fa-heart"></i> Favoris</a>
@@ -156,6 +157,14 @@
                 <div id="post-media-preview" class="hidden"></div>
             </div>
             <div id="feed-posts"></div>
+        </div>
+
+        <!-- DISCOVER -->
+        <div id="v-discover" class="view-page hidden">
+            <div class="page-header"><h1><i class="fa-solid fa-compass"></i> Découvrir</h1><p>Contenu éducatif pour vous</p></div>
+            <div class="discover-filters" id="discover-filters"></div>
+            <div class="discover-grid" id="discover-grid"></div>
+            <div class="discover-loader hidden" id="discover-loader"><i class="fa-solid fa-spinner"></i> Chargement...</div>
         </div>
 
         <!-- CATEGORIES -->
@@ -318,7 +327,7 @@
     <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
         <button onclick="goToView('home')" data-view="home" class="active"><i class="fa-solid fa-house"></i><span>Accueil</span></button>
-        <button onclick="goToView('feed')" data-view="feed"><i class="fa-regular fa-newspaper"></i><span>Feed</span></button>
+        <button onclick="goToView('discover')" data-view="discover"><i class="fa-solid fa-compass"></i><span>Découvrir</span></button>
         <button onclick="goToView('stories')" class="bottom-nav-add" data-view="stories"><i class="fa-solid fa-circle-play"></i></button>
         <button onclick="goToView('messages')" data-view="messages"><i class="fa-regular fa-comment-dots"></i><span>Messages</span><span class="badge-count hidden" id="msg-badge-mobile">0</span></button>
         <button onclick="goToView('profile')" data-view="profile"><i class="fa-regular fa-user"></i><span>Profil</span></button>
