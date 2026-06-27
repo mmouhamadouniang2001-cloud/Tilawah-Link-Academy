@@ -643,236 +643,172 @@ function applyLang(lang){
 }
 setTimeout(function(){applyLang(localStorage.getItem('tla_lang')||'fr');},600);
 
-// ===== DISCOVER — CONTENU ÉDUCATIF INFINI =====
-var DISCOVER_DB=[
-// === SCIENCES ===
-{t:'Comprendre les fractions en 3 min',yt:'kZwxv0wBPMA',cat:'Sciences',disc:'Mathématiques'},
-{t:'Les équations du 1er degré',yt:'G6Gkz0aSQ7I',cat:'Sciences',disc:'Mathématiques'},
-{t:'Le théorème de Pythagore',yt:'VqDPJMV2g4I',cat:'Sciences',disc:'Mathématiques'},
-{t:'Les puissances de 10 expliquées',yt:'bEKUYoBc5_Q',cat:'Sciences',disc:'Mathématiques'},
-{t:'Calcul mental : astuces rapides',yt:'RjTl7xp_I7w',cat:'Sciences',disc:'Mathématiques'},
-{t:'Les fonctions affines',yt:'tV3JpOmL2wQ',cat:'Sciences',disc:'Mathématiques'},
-{t:'Proportionnalité et pourcentages',yt:'JTz8xBCL5es',cat:'Sciences',disc:'Mathématiques'},
-{t:'Les statistiques en 5 min',yt:'h3yrLTbGp_A',cat:'Sciences',disc:'Mathématiques'},
-{t:'Comprendre la gravité',yt:'AwhKZ3fd9JA',cat:'Sciences',disc:'Physique'},
-{t:'L\'énergie cinétique expliquée',yt:'2kEG7sMQWN0',cat:'Sciences',disc:'Physique'},
-{t:'Les lois de Newton simplifiées',yt:'8jMjR3sBpz0',cat:'Sciences',disc:'Physique'},
-{t:'Circuit électrique simple',yt:'KFQzrU0BGDA',cat:'Sciences',disc:'Physique'},
-{t:'Atomes et molécules',yt:'O_2Fkf3Xyog',cat:'Sciences',disc:'Chimie'},
-{t:'Le tableau périodique',yt:'1qTYlvMKQug',cat:'Sciences',disc:'Chimie'},
-{t:'Réactions acido-basiques',yt:'7cH8cFQ5kUY',cat:'Sciences',disc:'Chimie'},
-{t:'La cellule animale vs végétale',yt:'nQfR2htpDlk',cat:'Sciences',disc:'Biologie'},
-{t:'La photosynthèse en 3 min',yt:'jFGqJhDMclw',cat:'Sciences',disc:'Biologie'},
-{t:'L\'ADN et les gènes',yt:'mXr-qWBFnXE',cat:'Sciences',disc:'Biologie'},
-{t:'Le cycle de l\'eau',yt:'IP55WQ2FDjk',cat:'Sciences',disc:'SVT'},
-{t:'Les volcans et séismes',yt:'67xq9XKKN7g',cat:'Sciences',disc:'SVT'},
-// === LANGUES ===
-{t:'Conjugaison : le passé composé',yt:'y3n7n5FmElk',cat:'Langues',disc:'Français'},
-{t:'Les homophones : a / à / as',yt:'aXDP5s1tNuM',cat:'Langues',disc:'Français'},
-{t:'Accord du participe passé',yt:'sEV3JRLfmWc',cat:'Langues',disc:'Français'},
-{t:'Les figures de style',yt:'jZX9VVlXmfI',cat:'Langues',disc:'Français'},
-{t:'Rédiger une introduction',yt:'1jEGb3pB_rE',cat:'Langues',disc:'Français'},
-{t:'Learn English: Daily Routine',yt:'eWnA8_bHBBo',cat:'Langues',disc:'Anglais'},
-{t:'English Vocabulary: Travel',yt:'fyhqc-NMHxc',cat:'Langues',disc:'Anglais'},
-{t:'Anglais : se présenter',yt:'oVbywvNS_rw',cat:'Langues',disc:'Anglais'},
-{t:'Apprendre l\'arabe : l\'alphabet',yt:'1H3MsUNkZMM',cat:'Langues',disc:'Arabe'},
-{t:'Les chiffres en arabe',yt:'7NKBMN3OWM0',cat:'Langues',disc:'Arabe'},
-{t:'Phrases utiles en arabe',yt:'1XgBMWadGrQ',cat:'Langues',disc:'Arabe'},
-{t:'Espagnol : les bases',yt:'h1nPGy9Zf_0',cat:'Langues',disc:'Espagnol'},
-{t:'Les salutations en wolof',yt:'ZZ_UgQZ3hbE',cat:'Langues',disc:'Wolof'},
-// === RELIGION ===
-{t:'Sourate Al-Fatiha - Tajwid',yt:'nKEgJHh1zKI',cat:'Religion',disc:'Coran'},
-{t:'Sourate Al-Ikhlas - Mémorisation',yt:'HzyzRV3kWqQ',cat:'Religion',disc:'Coran'},
-{t:'Sourate Al-Falaq et An-Nas',yt:'ZPt-cw5An8c',cat:'Religion',disc:'Coran'},
-{t:'Apprendre Ayat Al-Kursi',yt:'U1Ycjt0L_8Q',cat:'Religion',disc:'Mémorisation (Hifz)'},
-{t:'Les règles du Noun Sakin',yt:'f5pJ1iMLNjE',cat:'Religion',disc:'Tajwid'},
-{t:'Les Makharij des lettres',yt:'D9H2zvlsayI',cat:'Religion',disc:'Tajwid'},
-{t:'Idgham et Ikhfa expliqués',yt:'_EhHcQXJnsg',cat:'Religion',disc:'Tajwid'},
-{t:'Les 5 piliers de l\'Islam',yt:'dKnsdVE7HfE',cat:'Religion',disc:'Sciences Islamiques'},
-{t:'La prière : guide complet',yt:'CGTaxAWbN4s',cat:'Religion',disc:'Sciences Islamiques'},
-{t:'Ablutions (Woudou) étape par étape',yt:'SLb_3yy0jrU',cat:'Religion',disc:'Fiqh'},
-{t:'Les règles du jeûne',yt:'mAoVZBnXS8k',cat:'Religion',disc:'Fiqh'},
-{t:'Récitation Sourate Yasin',yt:'X3bxhG_b_lo',cat:'Religion',disc:'Coran'},
-{t:'Juz Amma complet',yt:'k94mKXQY-sE',cat:'Religion',disc:'Mémorisation (Hifz)'},
-// === INFORMATIQUE ===
-{t:'Python : premiers pas en 5 min',yt:'HWxBtxPBCAc',cat:'Informatique',disc:'Programmation'},
-{t:'Les variables en Python',yt:'JJVRbF4Mtss',cat:'Informatique',disc:'Programmation'},
-{t:'Les boucles for et while',yt:'232OeVMYoj4',cat:'Informatique',disc:'Programmation'},
-{t:'HTML en 5 minutes',yt:'u5W6tJ-k-7c',cat:'Informatique',disc:'Développement Web'},
-{t:'CSS les bases du style',yt:'1PnVor36_40',cat:'Informatique',disc:'Développement Web'},
-{t:'JavaScript pour débutants',yt:'_y9oxzTGERs',cat:'Informatique',disc:'Développement Web'},
-{t:'Créer un site web responsive',yt:'srvUrASNj0s',cat:'Informatique',disc:'Développement Web'},
-{t:'C\'est quoi l\'IA ?',yt:'oV74Najm1Pw',cat:'Informatique',disc:'Intelligence Artificielle'},
-{t:'Machine Learning expliqué',yt:'7R52wiUgxZI',cat:'Informatique',disc:'Intelligence Artificielle'},
-{t:'Excel : les bases essentielles',yt:'JMbneDcsGlg',cat:'Informatique',disc:'Bureautique'},
-{t:'Word : mise en page pro',yt:'Ep1iGD_LYCA',cat:'Informatique',disc:'Bureautique'},
-{t:'Introduction à la Data Science',yt:'J_LnPL3Rlac',cat:'Informatique',disc:'Data Science'},
-// === BUSINESS ===
-{t:'Marketing digital : les bases',yt:'bixR-KIJKYM',cat:'Business',disc:'Marketing'},
-{t:'Créer une stratégie marketing',yt:'3BYQfR1g2aI',cat:'Business',disc:'Marketing'},
-{t:'Les réseaux sociaux pour business',yt:'7OM27kJeF_g',cat:'Business',disc:'Marketing'},
-{t:'Comptabilité : le bilan',yt:'qW0w3KvdJz0',cat:'Business',disc:'Comptabilité'},
-{t:'Comprendre les états financiers',yt:'RUKkbv3fDGM',cat:'Business',disc:'Finance'},
-{t:'L\'investissement pour débutants',yt:'F6X4WsSTkos',cat:'Business',disc:'Finance'},
-{t:'Leadership et management',yt:'c7KYFHqNgCU',cat:'Business',disc:'Management'},
-{t:'Comment créer son entreprise',yt:'sQ1qbKijh3Y',cat:'Business',disc:'Entrepreneuriat'},
-{t:'Business plan en 5 étapes',yt:'Ag-S4NDSXUQ',cat:'Business',disc:'Entrepreneuriat'},
-// === ARTS ===
-{t:'Dessiner un visage : les bases',yt:'2s4-JNBuWtQ',cat:'Arts',disc:'Dessin'},
-{t:'Apprendre la perspective',yt:'d_qLST5xCHg',cat:'Arts',disc:'Dessin'},
-{t:'Les ombres et lumières',yt:'gHPPAsHY84s',cat:'Arts',disc:'Dessin'},
-{t:'Bases de la théorie musicale',yt:'F6zNhACvfS0',cat:'Arts',disc:'Musique'},
-{t:'Apprendre le piano : première leçon',yt:'827jmswqnEA',cat:'Arts',disc:'Musique'},
-{t:'Composition photo : règle des tiers',yt:'7ZVyNjKSr0M',cat:'Arts',disc:'Photographie'},
-{t:'Retouche photo avec Canva',yt:'eCJ2z19PXlY',cat:'Arts',disc:'Design Graphique'},
-{t:'Les bases de Photoshop',yt:'mUaVPNzIHmc',cat:'Arts',disc:'Design Graphique'},
-{t:'Montage vidéo pour débutants',yt:'FMNJEiU-kWk',cat:'Arts',disc:'Montage Vidéo'},
-// === DÉVELOPPEMENT PERSONNEL ===
-{t:'Comment avoir confiance en soi',yt:'4vml5GsmVis',cat:'Développement Personnel',disc:'Communication'},
-{t:'Parler en public sans stress',yt:'gY-LfpPcuco',cat:'Développement Personnel',disc:'Prise de parole'},
-{t:'Gestion du temps : méthode Pomodoro',yt:'VFW3Ld7JO0w',cat:'Développement Personnel',disc:'Productivité'},
-{t:'Comment être plus productif',yt:'5HVG4hwRGos',cat:'Développement Personnel',disc:'Productivité'},
-{t:'Les habitudes des gens efficaces',yt:'TFbv757kup4',cat:'Développement Personnel',disc:'Leadership'},
-{t:'Coaching : fixer ses objectifs',yt:'1r47EfqqFCo',cat:'Développement Personnel',disc:'Coaching'},
-{t:'Intelligence émotionnelle',yt:'Y7m9eNoB3NU',cat:'Développement Personnel',disc:'Communication'},
-// === SOUTIEN SCOLAIRE ===
-{t:'Maths 6ème : les fractions',yt:'DQ8Lv23hJd4',cat:'Soutien Scolaire',disc:'Collège'},
-{t:'Français 3ème : la dissertation',yt:'1Bv-mk3CQHU',cat:'Soutien Scolaire',disc:'Collège'},
-{t:'Physique-Chimie seconde',yt:'A0KSFQHM_Kg',cat:'Soutien Scolaire',disc:'Lycée'},
-{t:'Maths terminale : les limites',yt:'mQdMWW3Bypk',cat:'Soutien Scolaire',disc:'Préparation BAC'},
-{t:'Philosophie BAC : la liberté',yt:'vqFWMKx8Gnk',cat:'Soutien Scolaire',disc:'Préparation BAC'},
-{t:'Histoire-Géo BAC : méthodo',yt:'cPBkZHPJtQ8',cat:'Soutien Scolaire',disc:'Préparation BAC'},
-{t:'SVT BAC : la génétique',yt:'a4f1Mpjxqss',cat:'Soutien Scolaire',disc:'Préparation BAC'},
-{t:'Méthode de révision efficace',yt:'Mcfth5Q6L8I',cat:'Soutien Scolaire',disc:'Aide aux devoirs'},
-{t:'Apprendre à apprendre',yt:'IlU-zDU6aQ0',cat:'Soutien Scolaire',disc:'Aide aux devoirs'},
-// === IMAGES ÉDUCATIVES ===
-{t:'Les formules mathématiques essentielles',img:'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=600',cat:'Sciences',disc:'Mathématiques',type:'image'},
-{t:'Tableau périodique des éléments',img:'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600',cat:'Sciences',disc:'Chimie',type:'image'},
-{t:'Anatomie du corps humain',img:'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=600',cat:'Sciences',disc:'Biologie',type:'image'},
-{t:'Le système solaire',img:'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=600',cat:'Sciences',disc:'SVT',type:'image'},
-{t:'Vocabulaire anglais illustré',img:'https://images.unsplash.com/photo-1543109740-4bdb38fda756?w=600',cat:'Langues',disc:'Anglais',type:'image'},
-{t:'Calligraphie arabe',img:'https://images.unsplash.com/photo-1579187707643-35646d22b596?w=600',cat:'Langues',disc:'Arabe',type:'image'},
-{t:'Code Python - Variables et fonctions',img:'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600',cat:'Informatique',disc:'Programmation',type:'image'},
-{t:'Interface web responsive design',img:'https://images.unsplash.com/photo-1547658719-da2b51169166?w=600',cat:'Informatique',disc:'Développement Web',type:'image'},
-{t:'Intelligence artificielle et robotique',img:'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600',cat:'Informatique',disc:'Intelligence Artificielle',type:'image'},
-{t:'Stratégie marketing digital',img:'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600',cat:'Business',disc:'Marketing',type:'image'},
-{t:'Analyse financière et graphiques',img:'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600',cat:'Business',disc:'Finance',type:'image'},
-{t:'Mosquée et architecture islamique',img:'https://images.unsplash.com/photo-1564769625905-50e93615e769?w=600',cat:'Religion',disc:'Sciences Islamiques',type:'image'},
-{t:'Coran ouvert - pages illuminées',img:'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=600',cat:'Religion',disc:'Coran',type:'image'},
-{t:'Palette de couleurs et pinceaux',img:'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600',cat:'Arts',disc:'Dessin',type:'image'},
-{t:'Studio de musique et instruments',img:'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=600',cat:'Arts',disc:'Musique',type:'image'},
-{t:'Salle de classe et tableau',img:'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600',cat:'Soutien Scolaire',disc:'Lycée',type:'image'},
-{t:'Livres et étude',img:'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600',cat:'Soutien Scolaire',disc:'Aide aux devoirs',type:'image'},
-{t:'Productivité et planification',img:'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600',cat:'Développement Personnel',disc:'Productivité',type:'image'},
-{t:'Leadership et équipe',img:'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600',cat:'Développement Personnel',disc:'Leadership',type:'image'}
+// ===== TIKTOK-STYLE DISCOVER =====
+var TIKTOK_DB=[
+{t:'Comprendre les fractions en 3 min',yt:'kZwxv0wBPMA',cat:'Sciences',d:'Maths'},
+{t:'Les équations du 1er degré',yt:'G6Gkz0aSQ7I',cat:'Sciences',d:'Maths'},
+{t:'Le théorème de Pythagore',yt:'VqDPJMV2g4I',cat:'Sciences',d:'Maths'},
+{t:'Les puissances de 10',yt:'bEKUYoBc5_Q',cat:'Sciences',d:'Maths'},
+{t:'Calcul mental : astuces rapides',yt:'RjTl7xp_I7w',cat:'Sciences',d:'Maths'},
+{t:'Les fonctions affines',yt:'tV3JpOmL2wQ',cat:'Sciences',d:'Maths'},
+{t:'Proportionnalité et pourcentages',yt:'JTz8xBCL5es',cat:'Sciences',d:'Maths'},
+{t:'Les statistiques en 5 min',yt:'h3yrLTbGp_A',cat:'Sciences',d:'Maths'},
+{t:'Comprendre la gravité',yt:'AwhKZ3fd9JA',cat:'Sciences',d:'Physique'},
+{t:'L\'énergie cinétique expliquée',yt:'2kEG7sMQWN0',cat:'Sciences',d:'Physique'},
+{t:'Les lois de Newton',yt:'8jMjR3sBpz0',cat:'Sciences',d:'Physique'},
+{t:'Circuit électrique simple',yt:'KFQzrU0BGDA',cat:'Sciences',d:'Physique'},
+{t:'Atomes et molécules',yt:'O_2Fkf3Xyog',cat:'Sciences',d:'Chimie'},
+{t:'Le tableau périodique',yt:'1qTYlvMKQug',cat:'Sciences',d:'Chimie'},
+{t:'La cellule animale vs végétale',yt:'nQfR2htpDlk',cat:'Sciences',d:'Biologie'},
+{t:'La photosynthèse en 3 min',yt:'jFGqJhDMclw',cat:'Sciences',d:'Biologie'},
+{t:'L\'ADN et les gènes',yt:'mXr-qWBFnXE',cat:'Sciences',d:'Biologie'},
+{t:'Le cycle de l\'eau',yt:'IP55WQ2FDjk',cat:'Sciences',d:'SVT'},
+{t:'Les volcans et séismes',yt:'67xq9XKKN7g',cat:'Sciences',d:'SVT'},
+{t:'Conjugaison : le passé composé',yt:'y3n7n5FmElk',cat:'Langues',d:'Français'},
+{t:'Les homophones : a / à / as',yt:'aXDP5s1tNuM',cat:'Langues',d:'Français'},
+{t:'Accord du participe passé',yt:'sEV3JRLfmWc',cat:'Langues',d:'Français'},
+{t:'Les figures de style',yt:'jZX9VVlXmfI',cat:'Langues',d:'Français'},
+{t:'Rédiger une introduction',yt:'1jEGb3pB_rE',cat:'Langues',d:'Français'},
+{t:'Anglais : se présenter',yt:'oVbywvNS_rw',cat:'Langues',d:'Anglais'},
+{t:'Apprendre l\'arabe : alphabet',yt:'1H3MsUNkZMM',cat:'Langues',d:'Arabe'},
+{t:'Les chiffres en arabe',yt:'7NKBMN3OWM0',cat:'Langues',d:'Arabe'},
+{t:'Phrases utiles en arabe',yt:'1XgBMWadGrQ',cat:'Langues',d:'Arabe'},
+{t:'Sourate Al-Fatiha - Tajwid',yt:'nKEgJHh1zKI',cat:'Religion',d:'Coran'},
+{t:'Sourate Al-Ikhlas',yt:'HzyzRV3kWqQ',cat:'Religion',d:'Coran'},
+{t:'Sourate Al-Falaq et An-Nas',yt:'ZPt-cw5An8c',cat:'Religion',d:'Coran'},
+{t:'Apprendre Ayat Al-Kursi',yt:'U1Ycjt0L_8Q',cat:'Religion',d:'Hifz'},
+{t:'Les règles du Noun Sakin',yt:'f5pJ1iMLNjE',cat:'Religion',d:'Tajwid'},
+{t:'Les Makharij des lettres',yt:'D9H2zvlsayI',cat:'Religion',d:'Tajwid'},
+{t:'Les 5 piliers de l\'Islam',yt:'dKnsdVE7HfE',cat:'Religion',d:'Islam'},
+{t:'La prière : guide complet',yt:'CGTaxAWbN4s',cat:'Religion',d:'Islam'},
+{t:'Ablutions étape par étape',yt:'SLb_3yy0jrU',cat:'Religion',d:'Fiqh'},
+{t:'Sourate Yasin récitation',yt:'X3bxhG_b_lo',cat:'Religion',d:'Coran'},
+{t:'Juz Amma complet',yt:'k94mKXQY-sE',cat:'Religion',d:'Hifz'},
+{t:'Apprendre Sourate Qoraych',yt:'A2g-eTotpMM',cat:'Religion',d:'Tajwid'},
+{t:'Sourate Al-Kawthar Tajwid',yt:'cHXxpoHHrM4',cat:'Religion',d:'Tajwid'},
+{t:'Python : premiers pas',yt:'HWxBtxPBCAc',cat:'Info',d:'Python'},
+{t:'Les variables en Python',yt:'JJVRbF4Mtss',cat:'Info',d:'Python'},
+{t:'Les boucles for et while',yt:'232OeVMYoj4',cat:'Info',d:'Python'},
+{t:'HTML en 5 minutes',yt:'u5W6tJ-k-7c',cat:'Info',d:'Web'},
+{t:'CSS les bases du style',yt:'1PnVor36_40',cat:'Info',d:'Web'},
+{t:'JavaScript pour débutants',yt:'_y9oxzTGERs',cat:'Info',d:'Web'},
+{t:'C\'est quoi l\'IA ?',yt:'oV74Najm1Pw',cat:'Info',d:'IA'},
+{t:'Machine Learning expliqué',yt:'7R52wiUgxZI',cat:'Info',d:'IA'},
+{t:'Excel : les bases',yt:'JMbneDcsGlg',cat:'Info',d:'Bureau'},
+{t:'Marketing digital : les bases',yt:'bixR-KIJKYM',cat:'Business',d:'Marketing'},
+{t:'Stratégie marketing',yt:'3BYQfR1g2aI',cat:'Business',d:'Marketing'},
+{t:'Comptabilité : le bilan',yt:'qW0w3KvdJz0',cat:'Business',d:'Compta'},
+{t:'L\'investissement pour débutants',yt:'F6X4WsSTkos',cat:'Business',d:'Finance'},
+{t:'Comment créer son entreprise',yt:'sQ1qbKijh3Y',cat:'Business',d:'Entreprise'},
+{t:'Business plan en 5 étapes',yt:'Ag-S4NDSXUQ',cat:'Business',d:'Entreprise'},
+{t:'Confiance en soi',yt:'4vml5GsmVis',cat:'Dev Perso',d:'Confiance'},
+{t:'Parler en public sans stress',yt:'gY-LfpPcuco',cat:'Dev Perso',d:'Prise de parole'},
+{t:'Méthode Pomodoro',yt:'VFW3Ld7JO0w',cat:'Dev Perso',d:'Productivité'},
+{t:'Comment être plus productif',yt:'5HVG4hwRGos',cat:'Dev Perso',d:'Productivité'},
+{t:'Intelligence émotionnelle',yt:'Y7m9eNoB3NU',cat:'Dev Perso',d:'Coaching'},
+{t:'Maths 6ème : les fractions',yt:'DQ8Lv23hJd4',cat:'Scolaire',d:'Collège'},
+{t:'Maths terminale : les limites',yt:'mQdMWW3Bypk',cat:'Scolaire',d:'BAC'},
+{t:'Philosophie BAC : la liberté',yt:'vqFWMKx8Gnk',cat:'Scolaire',d:'BAC'},
+{t:'Méthode de révision efficace',yt:'Mcfth5Q6L8I',cat:'Scolaire',d:'Méthodo'},
+{t:'Apprendre à apprendre',yt:'IlU-zDU6aQ0',cat:'Scolaire',d:'Méthodo'}
 ];
 
-// Shuffle (Fisher-Yates)
-function shuffleArray(arr){var a=arr.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=a[i];a[i]=a[j];a[j]=tmp;}return a;}
-
-var _discoverState={items:[],shown:0,batchSize:12,filter:'Tout'};
+function shuffleArr(a){var b=a.slice();for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;}return b;}
+var _tk={items:[],filter:'Tout'};
 
 function loadDiscover(cat){
-  if(cat)_discoverState.filter=cat;
-  var f=_discoverState.filter;
-  // Filtrer
-  var filtered=f==='Tout'?DISCOVER_DB:DISCOVER_DB.filter(function(d){return d.cat===f;});
-  // Mélanger
-  _discoverState.items=shuffleArray(filtered);
-  _discoverState.shown=0;
-  // Render filters
-  var filtersEl=document.getElementById('discover-filters');
-  if(filtersEl){
-    var cats=['Tout','Sciences','Langues','Religion','Informatique','Business','Arts','Développement Personnel','Soutien Scolaire'];
-    var icons={'Tout':'fa-compass','Sciences':'fa-flask','Langues':'fa-language','Religion':'fa-mosque','Informatique':'fa-laptop-code','Business':'fa-briefcase','Arts':'fa-palette','Développement Personnel':'fa-brain','Soutien Scolaire':'fa-graduation-cap'};
-    filtersEl.innerHTML='';
+  if(cat!==undefined)_tk.filter=cat;
+  var f=_tk.filter;
+  _tk.items=shuffleArr(f==='Tout'?TIKTOK_DB:TIKTOK_DB.filter(function(v){return v.cat===f;}));
+  renderTikTok();
+}
+
+function buildSlideHTML(v){
+  var th='https://img.youtube.com/vi/'+v.yt+'/hqdefault.jpg';
+  var safeT=v.t.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  return '<div class="tiktok-slide" data-yt="'+v.yt+'">'+
+    '<img class="tiktok-thumb" src="'+th+'" alt="">'+
+    '<button class="tiktok-play-btn" onclick="tktoggle(this,\''+v.yt+'\')"><i class="fa-solid fa-play"></i></button>'+
+    '<div class="tiktok-overlay"><h3>'+v.t+'</h3><span class="tiktok-badge"><i class="fa-solid fa-tag"></i> '+v.d+'</span></div>'+
+    '<div class="tiktok-actions">'+
+      '<button onclick="event.stopPropagation();tkshare(\''+v.yt+'\',\''+safeT+'\')"><i class="fa-solid fa-share"></i><span>Partager</span></button>'+
+    '</div></div>';
+}
+
+function renderTikTok(){
+  var feed=document.getElementById('tiktok-feed');
+  var filters=document.getElementById('tiktok-filters');
+  var hint=document.getElementById('tiktok-hint');
+  if(!feed)return;
+  document.getElementById('tiktok-container').style.display='block';
+  // Filters
+  var cats=['Tout','Sciences','Langues','Religion','Info','Business','Dev Perso','Scolaire'];
+  if(filters){
+    filters.innerHTML='<button class="tiktok-close" onclick="tkcclose()"><i class="fa-solid fa-xmark"></i></button>';
     for(var i=0;i<cats.length;i++){
-      var c=cats[i];var isActive=c===f?'active':'';
-      filtersEl.innerHTML+='<button class="discover-pill '+isActive+'" onclick="loadDiscover(\''+c+'\')"><i class="fa-solid '+(icons[c]||'fa-circle')+'" ></i> '+c+'</button>';
+      var c=cats[i];
+      filters.innerHTML+='<button class="tiktok-pill '+(c===_tk.filter?'active':'')+'" onclick="loadDiscover(\''+c+'\')">'+c+'</button>';
     }
   }
-  // Render grid
-  var grid=document.getElementById('discover-grid');
-  if(grid)grid.innerHTML='';
-  loadMoreDiscover();
-  // Setup infinite scroll
-  if(!window._discoverScrollSetup){
-    window._discoverScrollSetup=true;
-    window.addEventListener('scroll',function(){
-      if(_discoverState.shown>=_discoverState.items.length)return;
-      var vd=document.getElementById('v-discover');
-      if(!vd||vd.classList.contains('hidden'))return;
-      if((window.innerHeight+window.scrollY)>=document.body.offsetHeight-400){
-        loadMoreDiscover();
-      }
-    });
+  // Slides (x3 for infinite feel)
+  var pool=_tk.items.concat(shuffleArr(_tk.items)).concat(shuffleArr(_tk.items));
+  feed.innerHTML='';
+  for(var i=0;i<pool.length;i++) feed.innerHTML+=buildSlideHTML(pool[i]);
+  // Hint
+  if(hint)hint.style.display='flex';
+  feed.addEventListener('scroll',function h(){if(hint)hint.style.display='none';feed.removeEventListener('scroll',h);},{once:true});
+  // Scroll snap handler
+  var st=null;
+  feed.onscroll=function(){clearTimeout(st);st=setTimeout(function(){tksnap(feed);},150);};
+  setTimeout(function(){tksnap(feed);},500);
+}
+
+function tksnap(feed){
+  var slides=feed.querySelectorAll('.tiktok-slide');
+  var top=feed.scrollTop,h=feed.clientHeight,best=null,min=1e9;
+  for(var i=0;i<slides.length;i++){var d=Math.abs(slides[i].offsetTop-top);if(d<min){min=d;best=slides[i];}}
+  if(!best)return;
+  // Pause all except current
+  slides.forEach(function(s){if(s!==best){var f=s.querySelector('iframe');if(f)f.remove();var b=s.querySelector('.tiktok-play-btn');if(b)b.classList.remove('playing');}});
+  // Autoplay current
+  if(!best.querySelector('iframe'))tkplay(best,best.getAttribute('data-yt'));
+  // Infinite: near end → append more
+  var last3=[slides[slides.length-1],slides[slides.length-2],slides[slides.length-3]];
+  if(last3.indexOf(best)!==-1){
+    var more=shuffleArr(_tk.items);
+    for(var i=0;i<more.length;i++){
+      var div=document.createElement('div');div.innerHTML=buildSlideHTML(more[i]);
+      feed.appendChild(div.firstChild);
+    }
   }
 }
 
-function loadMoreDiscover(){
-  var grid=document.getElementById('discover-grid');
-  var loader=document.getElementById('discover-loader');
-  if(!grid)return;
-  var items=_discoverState.items;
-  var start=_discoverState.shown;
-  var end=Math.min(start+_discoverState.batchSize,items.length);
-  if(start>=items.length){if(loader)loader.classList.add('hidden');return;}
-  if(loader)loader.classList.remove('hidden');
-  for(var i=start;i<end;i++){
-    var d=items[i];
-    var isVideo=!d.type||d.type==='video';
-    var thumbUrl=isVideo?'https://img.youtube.com/vi/'+d.yt+'/mqdefault.jpg':d.img;
-    var typeLabel=isVideo?'<span class="discover-type video-type"><i class="fa-solid fa-play"></i> Vidéo</span>':'<span class="discover-type image-type"><i class="fa-solid fa-image"></i> Image</span>';
-    var playOverlay=isVideo?'<div class="discover-play"><i class="fa-solid fa-circle-play"></i></div>':'';
-    var badgeClass=isVideo?'discover-badge':'discover-badge img-badge';
-    var onclick=isVideo?'openDiscoverVideo(\''+d.yt+'\',\''+escDisc(d.t)+'\')':'openDiscoverImage(\''+escDisc(d.img)+'\',\''+escDisc(d.t)+'\')';
-    grid.innerHTML+='<div class="discover-card" onclick="'+onclick+'"><div class="discover-thumb"><img src="'+thumbUrl+'" alt="'+escDisc(d.t)+'" loading="lazy">'+playOverlay+typeLabel+'</div><div class="discover-info"><h4>'+d.t+'</h4><span class="'+badgeClass+'"><i class="fa-solid '+(CATEGORIES[d.cat]?CATEGORIES[d.cat].icon:'fa-tag')+'"></i> '+d.disc+'</span></div></div>';
-  }
-  _discoverState.shown=end;
-  if(end>=items.length){
-    if(loader)loader.classList.add('hidden');
-    // Quand tout est affiché, re-mélanger et recommencer (infini)
-    if(items.length>0){
-      setTimeout(function(){
-        _discoverState.items=_discoverState.items.concat(shuffleArray(DISCOVER_DB.filter(function(dd){return _discoverState.filter==='Tout'||dd.cat===_discoverState.filter;})));
-      },500);
-    }
-  }else{
-    if(loader)loader.classList.add('hidden');
-  }
+function tkplay(slide,ytId){
+  if(slide.querySelector('iframe'))return;
+  var f=document.createElement('iframe');
+  f.src='https://www.youtube.com/embed/'+ytId+'?autoplay=1&rel=0&modestbranding=1&playsinline=1&controls=1';
+  f.allow='autoplay;encrypted-media;picture-in-picture';f.allowFullscreen=true;
+  f.style.cssText='position:absolute;inset:0;width:100%;height:100%;border:none;z-index:1;';
+  slide.appendChild(f);
+  var b=slide.querySelector('.tiktok-play-btn');if(b)b.classList.add('playing');
 }
 
-function escDisc(s){return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
-
-// Video modal
-window.openDiscoverVideo=function(ytId,title){
-  var overlay=document.createElement('div');
-  overlay.className='video-modal-overlay';
-  overlay.onclick=function(e){if(e.target===overlay)closeDiscoverModal(overlay);};
-  overlay.innerHTML='<div class="video-modal"><button class="video-close" onclick="closeDiscoverModal(this.closest(\'.video-modal-overlay\'))"><i class="fa-solid fa-xmark"></i></button><iframe src="https://www.youtube.com/embed/'+ytId+'?autoplay=1&rel=0" allow="autoplay;encrypted-media" allowfullscreen></iframe><div class="video-modal-title">'+title+'</div></div>';
-  document.body.appendChild(overlay);
-  document.body.style.overflow='hidden';
+window.tktoggle=function(btn,ytId){
+  var s=btn.closest('.tiktok-slide'),f=s.querySelector('iframe');
+  if(f){f.remove();btn.classList.remove('playing');}else{tkplay(s,ytId);}
 };
-
-// Image modal
-window.openDiscoverImage=function(imgUrl,title){
-  var overlay=document.createElement('div');
-  overlay.className='img-modal-overlay';
-  overlay.onclick=function(){closeDiscoverModal(overlay);};
-  overlay.innerHTML='<img src="'+imgUrl+'" alt="'+title+'"><div class="img-modal-info">'+title+'</div>';
-  document.body.appendChild(overlay);
-  document.body.style.overflow='hidden';
+window.tkshare=function(ytId,title){
+  var url='https://youtu.be/'+ytId;
+  if(navigator.share)navigator.share({title:title,url:url}).catch(function(){});
+  else{navigator.clipboard.writeText(url).then(function(){alert('Lien copié !');});}
 };
-
-window.closeDiscoverModal=function(overlay){
-  if(overlay){overlay.style.opacity='0';setTimeout(function(){overlay.remove();},300);}
-  document.body.style.overflow='';
+window.tkcclose=function(){
+  document.querySelectorAll('.tiktok-slide iframe').forEach(function(f){f.remove();});
+  document.getElementById('tiktok-container').style.display='none';
+  goToView('home');
 };
-
-// Fermer avec Escape
 document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){
-    var m=document.querySelector('.video-modal-overlay,.img-modal-overlay');
-    if(m)closeDiscoverModal(m);
-  }
+  if(e.key==='Escape'){var c=document.getElementById('tiktok-container');if(c&&c.style.display!=='none')tkcclose();}
 });
+
+
