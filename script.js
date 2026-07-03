@@ -28,6 +28,8 @@ window.goToView=function(name){
   document.querySelectorAll('.bottom-nav button').forEach(function(b){b.classList.remove('active');});
   var bb=document.querySelector('.bottom-nav button[data-view="'+name+'"]');if(bb)bb.classList.add('active');
   closeDD();closeMM();window.scrollTo({top:0,behavior:'smooth'});
+  // Hide TikTok when leaving discover
+  if(name!=='discover'){var tkc=document.getElementById('tiktok-container');if(tkc){tkc.style.display='none';document.querySelectorAll('.tiktok-slide iframe').forEach(function(f){f.remove();});}}
   if(name==='home')loadHomeData();
   if(name==='discover')loadDiscover();
   if(name==='feed')loadFeed();
@@ -643,74 +645,65 @@ function applyLang(lang){
 }
 setTimeout(function(){applyLang(localStorage.getItem('tla_lang')||'fr');},600);
 
-// ===== TIKTOK-STYLE DISCOVER =====
 var TIKTOK_DB=[
-{t:'Comprendre les fractions en 3 min',yt:'kZwxv0wBPMA',cat:'Sciences',d:'Maths'},
-{t:'Les équations du 1er degré',yt:'G6Gkz0aSQ7I',cat:'Sciences',d:'Maths'},
-{t:'Le théorème de Pythagore',yt:'VqDPJMV2g4I',cat:'Sciences',d:'Maths'},
-{t:'Les puissances de 10',yt:'bEKUYoBc5_Q',cat:'Sciences',d:'Maths'},
-{t:'Calcul mental : astuces rapides',yt:'RjTl7xp_I7w',cat:'Sciences',d:'Maths'},
-{t:'Les fonctions affines',yt:'tV3JpOmL2wQ',cat:'Sciences',d:'Maths'},
-{t:'Proportionnalité et pourcentages',yt:'JTz8xBCL5es',cat:'Sciences',d:'Maths'},
-{t:'Les statistiques en 5 min',yt:'h3yrLTbGp_A',cat:'Sciences',d:'Maths'},
-{t:'Comprendre la gravité',yt:'AwhKZ3fd9JA',cat:'Sciences',d:'Physique'},
-{t:'L\'énergie cinétique expliquée',yt:'2kEG7sMQWN0',cat:'Sciences',d:'Physique'},
-{t:'Les lois de Newton',yt:'8jMjR3sBpz0',cat:'Sciences',d:'Physique'},
-{t:'Circuit électrique simple',yt:'KFQzrU0BGDA',cat:'Sciences',d:'Physique'},
-{t:'Atomes et molécules',yt:'O_2Fkf3Xyog',cat:'Sciences',d:'Chimie'},
-{t:'Le tableau périodique',yt:'1qTYlvMKQug',cat:'Sciences',d:'Chimie'},
-{t:'La cellule animale vs végétale',yt:'nQfR2htpDlk',cat:'Sciences',d:'Biologie'},
-{t:'La photosynthèse en 3 min',yt:'jFGqJhDMclw',cat:'Sciences',d:'Biologie'},
-{t:'L\'ADN et les gènes',yt:'mXr-qWBFnXE',cat:'Sciences',d:'Biologie'},
-{t:'Le cycle de l\'eau',yt:'IP55WQ2FDjk',cat:'Sciences',d:'SVT'},
-{t:'Les volcans et séismes',yt:'67xq9XKKN7g',cat:'Sciences',d:'SVT'},
-{t:'Conjugaison : le passé composé',yt:'y3n7n5FmElk',cat:'Langues',d:'Français'},
-{t:'Les homophones : a / à / as',yt:'aXDP5s1tNuM',cat:'Langues',d:'Français'},
-{t:'Accord du participe passé',yt:'sEV3JRLfmWc',cat:'Langues',d:'Français'},
-{t:'Les figures de style',yt:'jZX9VVlXmfI',cat:'Langues',d:'Français'},
-{t:'Rédiger une introduction',yt:'1jEGb3pB_rE',cat:'Langues',d:'Français'},
-{t:'Anglais : se présenter',yt:'oVbywvNS_rw',cat:'Langues',d:'Anglais'},
-{t:'Apprendre l\'arabe : alphabet',yt:'1H3MsUNkZMM',cat:'Langues',d:'Arabe'},
-{t:'Les chiffres en arabe',yt:'7NKBMN3OWM0',cat:'Langues',d:'Arabe'},
-{t:'Phrases utiles en arabe',yt:'1XgBMWadGrQ',cat:'Langues',d:'Arabe'},
-{t:'Sourate Al-Fatiha - Tajwid',yt:'nKEgJHh1zKI',cat:'Religion',d:'Coran'},
-{t:'Sourate Al-Ikhlas',yt:'HzyzRV3kWqQ',cat:'Religion',d:'Coran'},
-{t:'Sourate Al-Falaq et An-Nas',yt:'ZPt-cw5An8c',cat:'Religion',d:'Coran'},
-{t:'Apprendre Ayat Al-Kursi',yt:'U1Ycjt0L_8Q',cat:'Religion',d:'Hifz'},
-{t:'Les règles du Noun Sakin',yt:'f5pJ1iMLNjE',cat:'Religion',d:'Tajwid'},
-{t:'Les Makharij des lettres',yt:'D9H2zvlsayI',cat:'Religion',d:'Tajwid'},
-{t:'Les 5 piliers de l\'Islam',yt:'dKnsdVE7HfE',cat:'Religion',d:'Islam'},
-{t:'La prière : guide complet',yt:'CGTaxAWbN4s',cat:'Religion',d:'Islam'},
-{t:'Ablutions étape par étape',yt:'SLb_3yy0jrU',cat:'Religion',d:'Fiqh'},
-{t:'Sourate Yasin récitation',yt:'X3bxhG_b_lo',cat:'Religion',d:'Coran'},
-{t:'Juz Amma complet',yt:'k94mKXQY-sE',cat:'Religion',d:'Hifz'},
-{t:'Apprendre Sourate Qoraych',yt:'A2g-eTotpMM',cat:'Religion',d:'Tajwid'},
-{t:'Sourate Al-Kawthar Tajwid',yt:'cHXxpoHHrM4',cat:'Religion',d:'Tajwid'},
-{t:'Python : premiers pas',yt:'HWxBtxPBCAc',cat:'Info',d:'Python'},
-{t:'Les variables en Python',yt:'JJVRbF4Mtss',cat:'Info',d:'Python'},
-{t:'Les boucles for et while',yt:'232OeVMYoj4',cat:'Info',d:'Python'},
-{t:'HTML en 5 minutes',yt:'u5W6tJ-k-7c',cat:'Info',d:'Web'},
-{t:'CSS les bases du style',yt:'1PnVor36_40',cat:'Info',d:'Web'},
-{t:'JavaScript pour débutants',yt:'_y9oxzTGERs',cat:'Info',d:'Web'},
-{t:'C\'est quoi l\'IA ?',yt:'oV74Najm1Pw',cat:'Info',d:'IA'},
-{t:'Machine Learning expliqué',yt:'7R52wiUgxZI',cat:'Info',d:'IA'},
-{t:'Excel : les bases',yt:'JMbneDcsGlg',cat:'Info',d:'Bureau'},
-{t:'Marketing digital : les bases',yt:'bixR-KIJKYM',cat:'Business',d:'Marketing'},
-{t:'Stratégie marketing',yt:'3BYQfR1g2aI',cat:'Business',d:'Marketing'},
-{t:'Comptabilité : le bilan',yt:'qW0w3KvdJz0',cat:'Business',d:'Compta'},
-{t:'L\'investissement pour débutants',yt:'F6X4WsSTkos',cat:'Business',d:'Finance'},
-{t:'Comment créer son entreprise',yt:'sQ1qbKijh3Y',cat:'Business',d:'Entreprise'},
-{t:'Business plan en 5 étapes',yt:'Ag-S4NDSXUQ',cat:'Business',d:'Entreprise'},
-{t:'Confiance en soi',yt:'4vml5GsmVis',cat:'Dev Perso',d:'Confiance'},
-{t:'Parler en public sans stress',yt:'gY-LfpPcuco',cat:'Dev Perso',d:'Prise de parole'},
-{t:'Méthode Pomodoro',yt:'VFW3Ld7JO0w',cat:'Dev Perso',d:'Productivité'},
-{t:'Comment être plus productif',yt:'5HVG4hwRGos',cat:'Dev Perso',d:'Productivité'},
-{t:'Intelligence émotionnelle',yt:'Y7m9eNoB3NU',cat:'Dev Perso',d:'Coaching'},
-{t:'Maths 6ème : les fractions',yt:'DQ8Lv23hJd4',cat:'Scolaire',d:'Collège'},
-{t:'Maths terminale : les limites',yt:'mQdMWW3Bypk',cat:'Scolaire',d:'BAC'},
-{t:'Philosophie BAC : la liberté',yt:'vqFWMKx8Gnk',cat:'Scolaire',d:'BAC'},
-{t:'Méthode de révision efficace',yt:'Mcfth5Q6L8I',cat:'Scolaire',d:'Méthodo'},
-{t:'Apprendre à apprendre',yt:'IlU-zDU6aQ0',cat:'Scolaire',d:'Méthodo'}
+// Sciences - Maths (Les Bons Profs, FR)
+{t:'Maths 3ème - Cours complet',yt:'pMjpAJX5Xf8',cat:'Sciences',d:'Maths'},
+{t:'Maths - Exercices corrigés',yt:'BAoPu0g4O_E',cat:'Sciences',d:'Maths'},
+{t:'Maths - Fonctions et calculs',yt:'2dwMa7aeb0M',cat:'Sciences',d:'Maths'},
+{t:'Maths - Géométrie dans l\'espace',yt:'rJR_912QyRM',cat:'Sciences',d:'Maths'},
+{t:'Maths - Équations et inéquations',yt:'b-OtyaEzUuM',cat:'Sciences',d:'Maths'},
+{t:'Maths - Probabilités',yt:'qeIu3SRNYs0',cat:'Sciences',d:'Maths'},
+{t:'Maths - Statistiques et données',yt:'gLYl_qKmp1s',cat:'Sciences',d:'Maths'},
+{t:'Maths - Trigonométrie',yt:'76zaU_DeK8k',cat:'Sciences',d:'Maths'},
+{t:'Maths - Suites numériques',yt:'riBTJya57-Q',cat:'Sciences',d:'Maths'},
+// Sciences - Physique/Chimie (FR)
+{t:'Physique-Chimie - Cours complet',yt:'oopS7yMpuoM',cat:'Sciences',d:'Physique'},
+{t:'Physique - Les forces en mouvement',yt:'ky2SGB8E6ZI',cat:'Sciences',d:'Physique'},
+{t:'Chimie - Réactions chimiques',yt:'mLRRMFnj29w',cat:'Sciences',d:'Chimie'},
+{t:'Physique - Énergie et puissance',yt:'lm5Glmg2FyY',cat:'Sciences',d:'Physique'},
+{t:'Chimie - Structure de la matière',yt:'IUX6ne8mxaY',cat:'Sciences',d:'Chimie'},
+// Sciences - SVT/Biologie (FR)
+{t:'SVT - La biodiversité',yt:'67HG1WKoUz4',cat:'Sciences',d:'SVT'},
+{t:'Biologie - L\'organisme humain',yt:'Yah29pkqofU',cat:'Sciences',d:'Biologie'},
+{t:'SVT - Géologie et environnement',yt:'KXhwW-ySDF4',cat:'Sciences',d:'SVT'},
+{t:'Biologie - Génétique et ADN',yt:'nLsUo2x5Wgg',cat:'Sciences',d:'Biologie'},
+// Langues - Français (FR)
+{t:'Grammaire française - Les bases',yt:'1Er8c6xikcA',cat:'Langues',d:'Français'},
+{t:'Conjugaison - Tous les temps',yt:'6skY9wm5XbA',cat:'Langues',d:'Français'},
+{t:'Français - Cours de grammaire',yt:'joQ7dbxHxs8',cat:'Langues',d:'Français'},
+{t:'Orthographe et grammaire',yt:'ZfHxE3aLlpI',cat:'Langues',d:'Français'},
+// Langues - Anglais (cours en FR)
+{t:'Anglais pour débutants',yt:'L8p8jUZ_YgY',cat:'Langues',d:'Anglais'},
+{t:'Anglais - Vocabulaire essentiel',yt:'r1jkdmtTHHE',cat:'Langues',d:'Anglais'},
+{t:'Anglais - Grammaire de base',yt:'zymnKSKHuwQ',cat:'Langues',d:'Anglais'},
+{t:'Anglais - Conversation courante',yt:'MlP2JdjwKlI',cat:'Langues',d:'Anglais'},
+{t:'Anglais - Compréhension orale',yt:'ZFrX_XSkio4',cat:'Langues',d:'Anglais'},
+// Religion - Coran/Tajwid (ARABE)
+{t:'تلاوة القرآن الكريم - سور قصيرة',yt:'UDvh63xHVa0',cat:'Religion',d:'قرآن'},
+{t:'القرآن الكريم - تلاوة خاشعة',yt:'8x_URBJW5Dk',cat:'Religion',d:'قرآن'},
+{t:'سورة البقرة كاملة',yt:'X2YnP50cwNU',cat:'Religion',d:'قرآن'},
+{t:'تلاوة مؤثرة - القرآن الكريم',yt:'-FxEYa8joK8',cat:'Religion',d:'قرآن'},
+{t:'تعلم التجويد - أحكام النون الساكنة',yt:'sp-5oAU7UoA',cat:'Religion',d:'تجويد'},
+{t:'أحكام التجويد مع الأمثلة',yt:'qn-XXq7snmI',cat:'Religion',d:'تجويد'},
+{t:'تعلم قراءة القرآن بالتجويد',yt:'MtJj3m5dQco',cat:'Religion',d:'تجويد'},
+{t:'مخارج الحروف العربية',yt:'TKcH4TuF2eU',cat:'Religion',d:'تجويد'},
+{t:'حفظ القرآن - جزء عم',yt:'ZU2f04jBoJY',cat:'Religion',d:'حفظ'},
+{t:'سورة قريش مع التجويد',yt:'A2g-eTotpMM',cat:'Religion',d:'تجويد'},
+{t:'سورة الكوثر مع التجويد',yt:'cHXxpoHHrM4',cat:'Religion',d:'تجويد'},
+// Informatique (FR)
+{t:'Python - Tutoriel complet français',yt:'oUJolR5bX6g',cat:'Info',d:'Python'},
+{t:'HTML CSS - Créer un site web',yt:'Y80juYcu3ZI',cat:'Info',d:'Web'},
+{t:'JavaScript - Cours en français',yt:'Q__MVPY2Prw',cat:'Info',d:'Web'},
+{t:'Développement web - Les bases',yt:'nf2XHSpI4WA',cat:'Info',d:'Web'},
+// Business (FR)
+{t:'Marketing digital - Formation',yt:'EnV_U6128SQ',cat:'Business',d:'Marketing'},
+{t:'Entrepreneuriat - Lancer son business',yt:'lIvl1syEKfs',cat:'Business',d:'Entreprise'},
+// Dev Personnel (FR)
+{t:'Développement personnel - Motivation',yt:'aIFkg8xn-Qk',cat:'Dev Perso',d:'Motivation'},
+{t:'Confiance en soi - Comment la développer',yt:'yP40Bs17GcA',cat:'Dev Perso',d:'Confiance'},
+{t:'Productivité - Méthodes efficaces',yt:'N8Szc3UGrl4',cat:'Dev Perso',d:'Productivité'},
+{t:'Bien-être et développement personnel',yt:'aEXBVGjm2sY',cat:'Dev Perso',d:'Bien-être'},
+{t:'Comment changer sa vie',yt:'Tk_UL1NNnMw',cat:'Dev Perso',d:'Coaching'}
 ];
 
 function shuffleArr(a){var b=a.slice();for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=b[i];b[i]=b[j];b[j]=t;}return b;}

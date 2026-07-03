@@ -569,7 +569,8 @@ body.dark .reply-indicator{background:rgba(26,188,156,.06);}
 
 /* ===== TIKTOK-STYLE DISCOVER ===== */
 #v-discover{padding:0!important;margin:0!important;}
-.tiktok-container{position:fixed;inset:0;z-index:900;background:#000;}
+.tiktok-container{position:fixed;inset:0;z-index:900;background:#000;display:none;}
+@media(min-width:768px){.tiktok-container{display:none;}.tiktok-container[style*="display: block"],.tiktok-container[style*="display:block"]{display:flex!important;align-items:center;justify-content:center;}.tiktok-feed{max-width:480px;height:100%;border-radius:0;box-shadow:0 0 80px rgba(0,0,0,.5);position:relative;}.tiktok-filters{max-width:480px;left:50%;transform:translateX(-50%);}.tiktok-swipe-hint{bottom:30px;}.tiktok-actions{right:20px;}}
 .tiktok-feed{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .tiktok-feed::-webkit-scrollbar{display:none;}
 .tiktok-slide{position:relative;width:100%;height:100vh;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;}
