@@ -51,7 +51,11 @@ window.refreshInterface=async function(){
   if(user.role==='admin'||user.activeRole==='admin'){
     document.getElementById('view-platform').classList.remove('hidden');setupNav(user);goToView('admin');startUnreadBadgeListener();hideLoader();return;
   }
-
+  if(user.role==='enseignant'||user.activeRole==='enseignant'){
+    if(user.paymentDate){var d=Math.floor((new Date()-new Date(user.paymentDate))/(365*864e5));if(d>=1&&user.paymentStatus!=='awaiting'){user.paymentStatus='expired';await fbSetUser(user.id,{paymentStatus:'expired'});setSession(user);}}
+    if(user.status==='pending'||user.paymentStatus==='expired'){document.getElementById('view-payment').classList.remove('hidden');showPayScreen(user);hideLoader();return;}
+    if(user.paymentStatus==='awaiting'){document.getElementById('view-payment').classList.remove('hidden');showWaitingScreen();hideLoader();return;}
+  }
   if(user.status==='blocked'){alert('Compte bloqué.');appLogout();return;}
   document.getElementById('view-platform').classList.remove('hidden');setupNav(user);goToView('home');startUnreadBadgeListener();hideLoader();
 };
@@ -94,7 +98,7 @@ window.appRegister=async function(){
   // Hacher le mot de passe avant de le stocker
   var hashedPass=await hashPassword(pass);
   var roles=role==='both'?['apprenant','enseignant']:[role];
-  var u={id:'u_'+Date.now(),role:role==='both'?'enseignant':role,roles:roles,activeRole:role==='both'?'apprenant':role,name:name,phone:phone,city:city,password:hashedPass,status:'active',categories:categories,disciplines:disciplines,publics:pubs,bio:'',avatar:'',followers:[],following:[],isOnline:false,lastSeen:'',createdAt:new Date().toISOString()};
+  var u={id:'u_'+Date.now(),role:role==='both'?'enseignant':role,roles:roles,activeRole:role==='both'?'apprenant':role,name:name,phone:phone,city:city,password:hashedPass,status:(role==='enseignant'||role==='both'?'pending':'active'),categories:categories,disciplines:disciplines,publics:pubs,bio:'',avatar:'',paymentStatus:'',paymentDate:'',followers:[],following:[],isOnline:false,lastSeen:'',createdAt:new Date().toISOString()};
   await fbSetUser(u.id,u);setSession(u);await refreshInterface();
 };
 window.appLogin=async function(){
@@ -142,6 +146,23 @@ window.appLogout=async function(){
   location.reload();
 };
 
+function showPayScreen(u){var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.remove('hidden');if(sw)sw.classList.add('hidden');if(window._waitingPoll){clearInterval(window._waitingPoll);window._waitingPoll=null;}}
+function showWaitingScreen(){
+  var sp=document.getElementById('pay-screen-pay'),sw=document.getElementById('pay-screen-waiting');if(sp)sp.classList.add('hidden');if(sw)sw.classList.remove('hidden');
+  if(window._waitingPoll)clearInterval(window._waitingPoll);
+  window._waitingPoll=setInterval(async function(){
+    var cu=getSession();if(!cu)return;
+    var fresh=await fbGetUser(cu.id);
+    if(fresh&&fresh.status==='active'&&fresh.paymentStatus==='paid'){
+      clearInterval(window._waitingPoll);window._waitingPoll=null;
+      setSession(fresh);await refreshInterface();
+    }
+  },10000);
+}
+window.confirmPayment=async function(){var u=getSession();if(!u)return;u.paymentStatus='awaiting';await fbSetUser(u.id,{paymentStatus:'awaiting'});setSession(u);showWaitingScreen();
+  var msg=encodeURIComponent('Bonjour Admin, je suis '+u.name+' ('+u.phone+'), je viens de confirmer mon paiement de 2000 FCFA/an via Wave. Merci de valider mon compte.');
+  window.open('https://wa.me/221774599835?text='+msg,'_blank');
+};
 
 // ===== INIT REG CHIPS =====
 function initRegChips(){
@@ -295,17 +316,16 @@ async function loadFeed(){
   var ca=document.getElementById('composer-avatar');if(ca)ca.src=cu.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(cu.name)+'&background=0d6e4e&color=fff&size=42';
   var fp=document.getElementById('feed-posts');if(!fp)return;fp.innerHTML='<p class="text-muted text-center">Chargement...</p>';
   var posts=await fbGetPosts(50);fp.innerHTML='';
-  var following=cu.following||[];
   for(var i=0;i<posts.length;i++){var p=posts[i];
-    if(p.userId!==cu.id&&following.indexOf(p.userId)===-1)continue;
     fp.innerHTML+=renderPostCard(p,cu);
   }
-  if(fp.innerHTML==='')fp.innerHTML='<p class="empty-msg">Aucune publication. Suivez des profils ou publiez quelque chose !</p>';
+  if(fp.innerHTML==='')fp.innerHTML='<p class="empty-msg">Aucune publication pour le moment.</p>';
 }
 function renderPostCard(p,cu){
   var av=p.userAvatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(p.userName)+'&background=0d6e4e&color=fff&size=42';
   var liked=p.likes&&p.likes.indexOf(cu.id)!==-1;
-  var del=p.userId===cu.id?'<button class="post-delete" onclick="event.stopPropagation();deletePost(\''+p.id+'\')"><i class="fa-solid fa-trash"></i></button>':'';
+  var isAdmin=cu.role==='admin'||cu.activeRole==='admin';
+  var del=(p.userId===cu.id||isAdmin)?'<button class="post-delete" onclick="event.stopPropagation();deletePost(\''+p.id+'\')"><i class="fa-solid fa-trash"></i></button>':'';
   var media='';if(p.mediaUrl){if(p.mediaType&&p.mediaType.startsWith('video/'))media='<div class="post-media"><video src="'+p.mediaUrl+'" controls></video></div>';else media='<div class="post-media"><img src="'+p.mediaUrl+'" onclick="openLightbox(\''+p.mediaUrl.replace(/'/g,"\\'")+'\')"></div>';}
   return '<div class="post-card"><div class="post-header"><img src="'+av+'" onclick="viewUserProfile(\''+p.userId+'\')"><div class="post-header-info"><strong onclick="viewUserProfile(\''+p.userId+'\')">'+p.userName+'</strong><small>'+timeAgo(p.createdAt)+'</small></div>'+del+'</div>'+(p.text?'<div class="post-body"><p>'+p.text+'</p></div>':'')+media+'<div class="post-actions"><button class="post-action-btn'+(liked?' liked':'')+'" onclick="toggleLike(\''+p.id+'\','+liked+')"><i class="fa-'+(liked?'solid':'regular')+' fa-heart"></i> '+(p.likes?p.likes.length:0)+'</button><button class="post-action-btn" onclick="openComments(\''+p.id+'\')"><i class="fa-regular fa-comment"></i> Commenter</button><button class="post-action-btn" onclick="toggleFavPost(\''+p.id+'\')"><i class="fa-regular fa-bookmark"></i> Sauver</button></div></div>';
 }
@@ -553,18 +573,20 @@ async function loadNotifications(){var cu=getSession();if(!cu)return;var nl=docu
 // ===== ADMIN =====
 window.loadAdminData=async function(){
   var users=await fbGetAllUsers();var as=document.getElementById('admin-stats');
-  if(as){var tc=0,sc=0;for(var i=0;i<users.length;i++){if(users[i].role==='enseignant')tc++;else if(users[i].role!=='admin')sc++;}
-    as.innerHTML='<div class="stat-card"><i class="fa-solid fa-users"></i><div><span class="stat-num">'+(tc+sc)+'</span><span class="stat-label">Total</span></div></div><div class="stat-card"><i class="fa-solid fa-chalkboard-user"></i><div><span class="stat-num">'+tc+'</span><span class="stat-label">Enseignants</span></div></div><div class="stat-card"><i class="fa-solid fa-user-graduate"></i><div><span class="stat-num">'+sc+'</span><span class="stat-label">Apprenants</span></div></div>';}
+  if(as){var tc=0,sc=0,pc=0;for(var i=0;i<users.length;i++){if(users[i].role==='enseignant')tc++;else if(users[i].role!=='admin')sc++;if(users[i].paymentStatus==='awaiting')pc++;}
+    as.innerHTML='<div class="stat-card"><i class="fa-solid fa-users"></i><div><span class="stat-num">'+(tc+sc)+'</span><span class="stat-label">Total</span></div></div><div class="stat-card"><i class="fa-solid fa-chalkboard-user"></i><div><span class="stat-num">'+tc+'</span><span class="stat-label">Enseignants</span></div></div><div class="stat-card"><i class="fa-solid fa-user-graduate"></i><div><span class="stat-num">'+sc+'</span><span class="stat-label">Apprenants</span></div></div><div class="stat-card"><i class="fa-solid fa-wallet"></i><div><span class="stat-num">'+pc+'</span><span class="stat-label">Paiements</span></div></div>';}
   var tb=document.getElementById('admin-tbody');if(!tb)return;tb.innerHTML='';
   for(var i=0;i<users.length;i++){var u=users[i];if(u.role==='admin')continue;
-    var sb=u.status==='active'?'<span class="status-badge status-active">Actif</span>':u.status==='blocked'?'<span class="status-badge status-blocked">Bloqué</span>':'<span class="status-badge status-active">Actif</span>';
-    var btns='';
-    if(u.status==='blocked')btns+='<button class="btn-success" style="margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'active\')">Activer</button>';
+    var sb=u.status==='active'?'<span class="status-badge status-active">Actif</span>':u.status==='pending'?'<span class="status-badge status-pending">En attente</span>':'<span class="status-badge status-blocked">Bloqué</span>';
+    var pay='—';if(u.role==='enseignant'){if(u.paymentStatus==='awaiting')pay='<span class="status-badge status-pending">💰 Signalé</span>';else if(u.paymentDate)pay='<span class="status-badge status-active">✅ Payé</span>';else pay='<span class="status-badge status-pending">Non payé</span>';}
+    var btns='';if(u.paymentStatus==='awaiting')btns+='<button class="btn-success" style="margin:2px;" onclick="adminValidatePayment(\''+u.id+'\')">✅</button>';
+    if(u.status!=='active')btns+='<button class="btn-success" style="margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'active\')">Activer</button>';
     if(u.status!=='blocked')btns+='<button class="btn-danger" style="margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'blocked\')">Bloquer</button>';
     btns+='<button class="btn-danger" style="margin:2px;opacity:.7;" onclick="adminDeleteUser(\''+u.id+'\')"><i class="fa-solid fa-trash"></i></button>';
-    tb.innerHTML+='<tr><td>'+u.name+'</td><td>'+(u.role||'')+'</td><td>'+u.phone+'</td><td>'+(u.city||'')+'</td><td>'+sb+'</td><td>'+btns+'</td></tr>';}
+    tb.innerHTML+='<tr><td>'+u.name+'</td><td>'+(u.role||'')+'</td><td>'+u.phone+'</td><td>'+(u.city||'')+'</td><td>'+sb+'</td><td>'+pay+'</td><td>'+btns+'</td></tr>';}
 };
 window.adminSetStatus=async function(uid,s){await fbSetUser(uid,{status:s});await loadAdminData();};
+window.adminValidatePayment=async function(uid){await fbSetUser(uid,{paymentStatus:'paid',paymentDate:new Date().toISOString(),status:'active'});alert('Paiement validé !');await loadAdminData();};
 window.adminDeleteUser=async function(uid){if(!confirm('Supprimer ?'))return;await fbDeleteUser(uid);alert('Supprimé.');await loadAdminData();};
 window.adminBroadcastMessage=async function(){
   var msg=prompt('Entrez le message collectif à envoyer à tous les utilisateurs :');
