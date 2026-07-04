@@ -177,10 +177,10 @@ setTimeout(initRegChips,500);
 async function loadHomeData(){
   var u=getSession();
   var hw=document.getElementById('hero-welcome');if(hw&&u)hw.innerHTML='Bienvenue <span class="gradient-text">'+u.name+'</span>';
-  // Feed preview
+  // Feed - toutes les publications
   var hf=document.getElementById('home-feed');
-  if(hf){var posts=await fbGetPosts(3);hf.innerHTML='';
-    if(posts.length===0)hf.innerHTML='<p class="text-muted text-center">Aucune publication. <a href="#" onclick="goToView(\'feed\');return false">Soyez le premier !</a></p>';
+  if(hf){var posts=await fbGetPosts(50);hf.innerHTML='';
+    if(posts.length===0)hf.innerHTML='<p class="text-muted text-center">Aucune publication pour le moment.</p>';
     else for(var i=0;i<posts.length;i++)hf.innerHTML+=renderPostCard(posts[i],u);
   }
   // Teachers preview
