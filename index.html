@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tilawah Link Academy — Plateforme Éducative</title>
     <meta name="description" content="Tilawah Link Academy : plateforme éducative moderne. Trouvez des enseignants, apprenez et enseignez.">
+    <meta name="theme-color" content="#0a7b56">
+    <meta property="og:title" content="Tilawah Link Academy — Plateforme Éducative">
+    <meta property="og:description" content="Plateforme éducative moderne pour connecter enseignants et apprenants du Coran et des sciences islamiques.">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
     <script>document.write('<link rel="stylesheet" href="styles.css?v='+Date.now()+'">');</script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -83,7 +88,7 @@
                 <div class="nav-profile-wrap">
                     <button class="nav-avatar-btn" onclick="toggleProfileMenu()"><img id="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=0d6e4e&color=fff&size=40" alt=""><span class="online-dot"></span></button>
                     <div class="profile-dropdown hidden" id="profile-dropdown">
-                        <div class="dropdown-header"><img id="dd-avatar" src=""><div><strong id="dd-name"></strong><small id="dd-role"></small></div></div>
+                        <div class="dropdown-header"><img id="dd-avatar" src="" alt="Avatar"><div><strong id="dd-name"></strong><small id="dd-role"></small></div></div>
                         <div class="dropdown-divider"></div>
                         <a href="#" onclick="goToView('profile');closeDD();return false"><i class="fa-solid fa-user"></i> Mon Profil</a>
                         <a href="#" onclick="goToView('favorites');closeDD();return false"><i class="fa-solid fa-heart"></i> Favoris</a>
@@ -99,7 +104,7 @@
     </nav>
     <div class="mobile-menu hidden" id="mobile-menu">
         <a href="#" onclick="goToView('home');closeMM();return false"><i class="fa-solid fa-house"></i> Accueil</a>
-        <a href="#" onclick="goToView('categories');closeMM();return false"><i class="fa-solid fa-grid-2"></i> Catégories</a>
+        <a href="#" onclick="goToView('categories');closeMM();return false"><i class="fa-solid fa-th-large"></i> Catégories</a>
         <a href="#" onclick="goToView('feed');closeMM();return false"><i class="fa-solid fa-newspaper"></i> Publications</a>
         <a href="#" onclick="goToView('messages');closeMM();return false"><i class="fa-solid fa-comment-dots"></i> Messages</a>
         <a href="#" onclick="goToView('favorites');closeMM();return false"><i class="fa-solid fa-heart"></i> Favoris</a>
@@ -131,7 +136,7 @@
             <!-- Home Post Composer -->
             <section class="section">
                 <div class="post-composer">
-                    <div class="composer-header"><img id="home-composer-avatar" src="" class="composer-av"><textarea id="home-post-text" placeholder="Quoi de neuf ? Partagez quelque chose..."></textarea></div>
+                    <div class="composer-header"><img id="home-composer-avatar" src="" alt="" class="composer-av"><textarea id="home-post-text" placeholder="Quoi de neuf ? Partagez quelque chose..."></textarea></div>
                     <div class="composer-actions">
                         <label class="composer-btn"><i class="fa-solid fa-image"></i> Photo<input type="file" id="home-post-media" accept="image/*,video/*" class="hidden" onchange="previewHomePostMedia(this)"></label>
                         <button class="btn-main btn-sm" onclick="publishHomePost()"><i class="fa-solid fa-paper-plane"></i> Publier</button>
@@ -154,7 +159,7 @@
         <div id="v-feed" class="view-page hidden">
             <div class="page-header"><h1><i class="fa-solid fa-newspaper"></i> Publications</h1></div>
             <div class="post-composer">
-                <div class="composer-header"><img id="composer-avatar" src="" class="composer-av"><textarea id="post-text" placeholder="Quoi de neuf ? Partagez quelque chose..."></textarea></div>
+                <div class="composer-header"><img id="composer-avatar" src="" alt="" class="composer-av"><textarea id="post-text" placeholder="Quoi de neuf ? Partagez quelque chose..."></textarea></div>
                 <div class="composer-actions">
                     <label class="composer-btn"><i class="fa-solid fa-image"></i> Photo<input type="file" id="post-media" accept="image/*,video/*" class="hidden" onchange="previewPostMedia(this)"></label>
                     <button class="btn-main btn-sm" onclick="publishPost()"><i class="fa-solid fa-paper-plane"></i> Publier</button>
@@ -166,7 +171,7 @@
 
         <!-- CATEGORIES -->
         <div id="v-categories" class="view-page hidden">
-            <div class="page-header"><h1><i class="fa-solid fa-grid-2"></i> Catégories</h1><p>Explorez toutes les disciplines</p></div>
+            <div class="page-header"><h1><i class="fa-solid fa-th-large"></i> Catégories</h1><p>Explorez toutes les disciplines</p></div>
             <div class="categories-full-grid" id="categories-full"></div>
         </div>
 
@@ -229,7 +234,7 @@
                 <div class="profile-cover">
                     <div class="profile-cover-gradient"></div>
                     <div class="profile-main-info">
-                        <div class="profile-avatar-wrap"><img id="prof-avatar" src="" class="profile-avatar"><label class="avatar-edit-btn" for="prof-avatar-input"><i class="fa-solid fa-camera"></i></label><input type="file" id="prof-avatar-input" accept="image/*" class="hidden" onchange="uploadAvatar(this)"></div>
+                        <div class="profile-avatar-wrap"><img id="prof-avatar" src="" alt="Photo de profil" class="profile-avatar"><label class="avatar-edit-btn" for="prof-avatar-input"><i class="fa-solid fa-camera"></i></label><input type="file" id="prof-avatar-input" accept="image/*" class="hidden" onchange="uploadAvatar(this)"></div>
                         <h1 id="prof-name"></h1>
                         <p id="prof-role-badge" class="role-badge"></p>
                         <div class="profile-stats-row">
@@ -273,7 +278,7 @@
         <!-- STORY VIEWER -->
         <div id="story-viewer" class="story-viewer hidden" onclick="handleStoryClick(event)">
             <div class="story-progress" id="story-progress"></div>
-            <div class="story-header"><img id="sv-avatar" src=""><div><strong id="sv-name"></strong><small id="sv-time"></small></div><button class="story-close" onclick="closeStoryViewer()"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="story-header"><img id="sv-avatar" src="" alt=""><div><strong id="sv-name"></strong><small id="sv-time"></small></div><button class="story-close" onclick="closeStoryViewer()"><i class="fa-solid fa-xmark"></i></button></div>
             <div class="story-content" id="sv-content"></div>
             <div class="story-footer"><span id="sv-views"><i class="fa-solid fa-eye"></i> 0</span><div class="story-reply-input"><input type="text" id="sv-reply" placeholder="Répondre..."><button onclick="sendStoryReply()"><i class="fa-solid fa-paper-plane"></i></button></div></div>
         </div>

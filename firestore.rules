@@ -1,64 +1,37 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ===== USERS =====
-    // Lecture : tout utilisateur authentifié peut voir les profils
-    // Écriture : seul un utilisateur authentifié peut écrire
+    // Users: authenticated can read, authenticated can write
     match /users/{userId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null;
-
-      // Sous-collection favoris
-      match /favorites/{favId} {
-        allow read, write: if request.auth != null;
-      }
+      allow update, delete: if request.auth != null;
     }
-
-    // ===== CONVERSATIONS =====
-    // Seuls les utilisateurs authentifiés peuvent accéder aux conversations
+    // Posts: authenticated can read/write
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null;
+    }
+    // Conversations & messages
     match /conversations/{convId} {
       allow read, write: if request.auth != null;
-
-      // Messages dans une conversation
       match /messages/{msgId} {
         allow read, write: if request.auth != null;
       }
     }
-
-    // ===== POSTS =====
-    match /posts/{postId} {
+    // Stories
+    match /stories/{storyId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null;
-      allow update: if request.auth != null;
-      allow delete: if request.auth != null;
-
-      // Commentaires
-      match /comments/{commentId} {
-        allow read, write: if request.auth != null;
-      }
+      allow update, delete: if request.auth != null;
     }
-
-    // ===== STORIES =====
-    match /stories/{storyId} {
+    // Notifications
+    match /notifications/{userId}/{notifId} {
       allow read, write: if request.auth != null;
     }
-
-    // ===== MEDIA =====
-    match /media/{mediaId} {
-      allow read, write: if request.auth != null;
-    }
-
-    // ===== NOTIFICATIONS =====
     match /notifications/{notifId} {
       allow read, write: if request.auth != null;
-    }
-
-    // ===== TOUT LE RESTE EST BLOQUÉ =====
-    match /{document=**} {
-      allow read, write: if false;
     }
   }
 }

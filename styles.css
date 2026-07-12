@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap');
+
 :root{
   --primary:#0a7b56;
   --primary-light:#12a876;
@@ -229,27 +229,7 @@ input,textarea,select,button{font-family:var(--font);outline:none;}
 }
 .btn-ghost:hover{background:var(--bg);color:var(--primary);}
 
-.btn-wave{
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:14px 28px;border-radius:var(--radius-full);
-  font-weight:700;border:none;
-  background:linear-gradient(135deg,#1DC4E9,#5B86E5,#1DC4E9);
-  background-size:200% 200%;
-  animation:gradientShift 4s ease infinite;
-  color:var(--white);cursor:pointer;transition:var(--transition);font-size:.95rem;
-  position:relative;overflow:hidden;
-}
-.btn-wave::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.2) 50%,transparent 70%);
-  background-size:200% 100%;
-  animation:shimmer 2s ease-in-out infinite;
-  pointer-events:none;
-}
-.btn-wave:hover{
-  transform:translateY(-3px);
-  box-shadow:0 8px 30px rgba(91,134,229,.35),0 0 20px rgba(29,196,233,.25);
-}
+
 
 .btn-sm{
   display:inline-flex;align-items:center;gap:6px;
@@ -422,46 +402,7 @@ textarea:focus{
 }
 .chip-check input[type="checkbox"]{width:16px;height:16px;accent-color:var(--turquoise);}
 
-/* ===== PAYMENT VIEW ===== */
-.payment-view{
-  min-height:100vh;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,var(--primary-dark),var(--primary),var(--turquoise));
-  background-size:200% 200%;
-  animation:gradientShift 8s ease infinite;
-  padding:24px;
-}
-.payment-card{
-  background:rgba(255,255,255,.90);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  border-radius:var(--radius-lg);padding:48px 38px;
-  max-width:480px;width:100%;text-align:center;
-  box-shadow:var(--shadow-lg);
-  border:1px solid rgba(255,255,255,.30);
-  animation:slideInUp .5s ease;
-}
-.payment-icon{
-  width:80px;height:80px;border-radius:50%;
-  background:linear-gradient(135deg,var(--turquoise),var(--primary));
-  display:flex;align-items:center;justify-content:center;
-  margin:0 auto 20px;font-size:2rem;color:var(--white);
-  box-shadow:var(--glow-turquoise);
-}
-.payment-icon.waiting{
-  background:linear-gradient(135deg,var(--accent),var(--accent-light));
-  animation:pulse 2s infinite,glowPulse 2s ease-in-out infinite;
-  box-shadow:var(--glow-accent);
-}
-.payment-card h2{font-size:1.4rem;margin-bottom:8px;}
-.payment-details{
-  background:var(--bg);border-radius:var(--radius);
-  padding:24px;margin:24px 0;text-align:center;
-}
-.wave-number{
-  font-size:1.8rem;color:var(--primary);font-weight:800;
-  margin:12px 0;letter-spacing:.02em;
-  text-shadow:0 0 10px rgba(10,123,86,.15);
-}
+
 
 /* ===== TOP NAV ===== */
 .top-nav{
@@ -1760,17 +1701,7 @@ body.dark .fav-tab.active{
 
 body.dark #dark-mode-btn i::before{content:"\f185";}
 
-body.dark .payment-view{
-  background:linear-gradient(135deg,#020806,#040f0a,#081a13);
-  background-size:200% 200%;
-  animation:gradientShift 8s ease infinite;
-}
-body.dark .payment-card{
-  background:rgba(20,31,27,.88);
-  backdrop-filter:blur(20px);
-  border-color:rgba(26,188,156,.10);
-}
-body.dark .payment-details{background:var(--bg-alt);}
+
 body.dark .loader-overlay{background:var(--bg);}
 body.dark .loader-spinner{box-shadow:var(--glow-turquoise);}
 
@@ -1842,9 +1773,7 @@ body.dark .hero-stats strong{
 body.dark .prof-stat strong{
   text-shadow:0 0 12px rgba(26,188,156,.25);
 }
-body.dark .wave-number{
-  text-shadow:0 0 15px rgba(26,188,156,.30);
-}
+
 
 body.dark .btn-main{
   box-shadow:0 4px 20px rgba(10,123,86,.35),var(--glow-md);
@@ -1852,12 +1781,7 @@ body.dark .btn-main{
 body.dark .btn-main:hover{
   box-shadow:0 8px 35px rgba(10,123,86,.40),var(--glow-lg);
 }
-body.dark .btn-wave{
-  box-shadow:0 4px 20px rgba(91,134,229,.25);
-}
-body.dark .btn-wave:hover{
-  box-shadow:0 8px 35px rgba(91,134,229,.40),0 0 25px rgba(29,196,233,.30);
-}
+
 
 body.dark .logo-icon{
   box-shadow:0 8px 25px rgba(10,123,86,.30),var(--glow-turquoise);

@@ -1,5 +1,6 @@
 window.onerror=function(msg,s,l){console.error('Error:',msg,'Line:',l);};
 window.onunhandledrejection=function(e){console.error('Unhandled:',e.reason);};
+function sanitize(str){if(!str)return '';var d=document.createElement('div');d.textContent=str;return d.innerHTML;}
 
 document.addEventListener("DOMContentLoaded",async function(){
   try{
@@ -156,7 +157,7 @@ setTimeout(initRegChips,500);
 // ===== HOME =====
 async function loadHomeData(){
   var u=getSession();
-  var hw=document.getElementById('hero-welcome');if(hw&&u)hw.innerHTML='Bienvenue <span class="gradient-text">'+u.name+'</span>';
+  var hw=document.getElementById('hero-welcome');if(hw&&u)hw.innerHTML='Bienvenue <span class="gradient-text">'+sanitize(u.name)+'</span>';
   // Feed - toutes les publications
   var hf=document.getElementById('home-feed');
   if(hf){var posts=await fbGetPosts(50);hf.innerHTML='';
@@ -169,7 +170,7 @@ async function loadHomeData(){
     for(var i=0;i<users.length&&count<6;i++){var t=users[i];if(t.role!=='enseignant'||t.status!=='active')continue;count++;
       var av=t.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(t.name)+'&background=0d6e4e&color=fff&size=150';
       var badges='';if(t.categories)for(var j=0;j<Math.min(t.categories.length,2);j++)badges+='<span class="badge">'+t.categories[j]+'</span>';
-      tg.innerHTML+='<div class="teacher-card" onclick="viewUserProfile(\''+t.id+'\')"><div class="teacher-avatar"><img src="'+av+'"></div><div class="teacher-info"><h3>'+t.name+'</h3><p class="text-sm"><i class="fa-solid fa-location-dot"></i> '+(t.city||'')+'</p><div class="specs-badges">'+badges+'</div></div></div>';
+      tg.innerHTML+='<div class="teacher-card" onclick="viewUserProfile(\''+t.id+'\')"><div class="teacher-avatar"><img src="'+av+'"></div><div class="teacher-info"><h3>'+sanitize(t.name)+'</h3><p class="text-sm"><i class="fa-solid fa-location-dot"></i> '+sanitize(t.city||'')+'</p><div class="specs-badges">'+badges+'</div></div></div>';
     }
     if(count===0)tg.innerHTML='<p class="text-muted text-center" style="grid-column:1/-1">Aucun enseignant.</p>';
   }
@@ -222,7 +223,7 @@ function showCurrentStory(){
   var cu=getSession();var svViews=document.getElementById('sv-views');
   if(cu&&s.userId===cu.id){var uniqueViews=[];if(s.views){s.views.forEach(function(v){var uid=typeof v==='string'?v:v.userId;if(uniqueViews.indexOf(uid)===-1)uniqueViews.push(uid);});}svViews.innerHTML='<i class="fa-solid fa-eye"></i> '+uniqueViews.length;svViews.style.display='';}else{svViews.style.display='none';}
   var sc=document.getElementById('sv-content');
-  if(s.type==='text')sc.innerHTML='<div class="text-story" style="background:'+(s.bgColor||'#0d6e4e')+'">'+s.text+'</div>';
+  if(s.type==='text')sc.innerHTML='<div class="text-story" style="background:'+(s.bgColor||'#0d6e4e')+'">'+sanitize(s.text)+'</div>';
   else if(s.mediaUrl){if(s.mediaType&&s.mediaType.startsWith('video/'))sc.innerHTML='<video src="'+s.mediaUrl+'" autoplay></video>';else sc.innerHTML='<img src="'+s.mediaUrl+'">';}
   if(cu)fbAddStoryView(s.id,cu.id).catch(function(){});
   // Progress bar
@@ -277,7 +278,7 @@ window.renderTeachers=async function(){
     var isFollowing=cu&&cu.following&&cu.following.indexOf(t.id)!==-1;
     var followBtn=cu&&cu.id!==t.id?(isFollowing?'<button class="btn-outline-main w-full" style="margin-top:6px" onclick="event.stopPropagation();unfollowUser(\''+t.id+'\')"><i class="fa-solid fa-user-check"></i> Abonné</button>':'<button class="btn-main w-full" style="margin-top:6px" onclick="event.stopPropagation();followUser(\''+t.id+'\')"><i class="fa-solid fa-user-plus"></i> Suivre</button>'):'';
     var msgBtn=cu&&cu.id!==t.id?'<button class="btn-outline-main w-full" style="margin-top:6px" onclick="event.stopPropagation();startConversation(\''+t.id+'\')"><i class="fa-solid fa-comment-dots"></i> Message</button>':'';
-    container.innerHTML+='<div class="teacher-card" onclick="viewUserProfile(\''+t.id+'\')"><div class="teacher-avatar"><img src="'+av+'"></div><div class="teacher-info"><h3>'+t.name+'</h3><p class="text-sm"><i class="fa-solid fa-location-dot"></i> '+(t.city||'')+'</p><div class="specs-badges">'+badges+'</div>'+followBtn+msgBtn+'</div></div>';
+    container.innerHTML+='<div class="teacher-card" onclick="viewUserProfile(\''+t.id+'\')"><div class="teacher-avatar"><img src="'+av+'"></div><div class="teacher-info"><h3>'+sanitize(t.name)+'</h3><p class="text-sm"><i class="fa-solid fa-location-dot"></i> '+sanitize(t.city||'')+'</p><div class="specs-badges">'+badges+'</div>'+followBtn+msgBtn+'</div></div>';
   }
   if(count===0)container.innerHTML='<p class="text-muted text-center" style="grid-column:1/-1">Aucun enseignant trouvé.</p>';
 };
@@ -307,7 +308,7 @@ function renderPostCard(p,cu){
   var isAdmin=cu.role==='admin'||cu.activeRole==='admin';
   var del=(p.userId===cu.id||isAdmin)?'<button class="post-delete" onclick="event.stopPropagation();deletePost(\''+p.id+'\')"><i class="fa-solid fa-trash"></i></button>':'';
   var media='';if(p.mediaUrl){if(p.mediaType&&p.mediaType.startsWith('video/'))media='<div class="post-media"><video src="'+p.mediaUrl+'" controls></video></div>';else media='<div class="post-media"><img src="'+p.mediaUrl+'" onclick="openLightbox(\''+p.mediaUrl.replace(/'/g,"\\'")+'\')"></div>';}
-  return '<div class="post-card"><div class="post-header"><img src="'+av+'" onclick="viewUserProfile(\''+p.userId+'\')"><div class="post-header-info"><strong onclick="viewUserProfile(\''+p.userId+'\')">'+p.userName+'</strong><small>'+timeAgo(p.createdAt)+'</small></div>'+del+'</div>'+(p.text?'<div class="post-body"><p>'+p.text+'</p></div>':'')+media+'<div class="post-actions"><button class="post-action-btn'+(liked?' liked':'')+'" onclick="toggleLike(\''+p.id+'\','+liked+')"><i class="fa-'+(liked?'solid':'regular')+' fa-heart"></i> '+(p.likes?p.likes.length:0)+'</button><button class="post-action-btn" onclick="openComments(\''+p.id+'\')"><i class="fa-regular fa-comment"></i> Commenter</button><button class="post-action-btn" onclick="toggleFavPost(\''+p.id+'\')"><i class="fa-regular fa-bookmark"></i> Sauver</button></div></div>';
+  return '<div class="post-card"><div class="post-header"><img src="'+av+'" onclick="viewUserProfile(\''+p.userId+'\')"><div class="post-header-info"><strong onclick="viewUserProfile(\''+p.userId+'\')">'+sanitize(p.userName)+'</strong><small>'+timeAgo(p.createdAt)+'</small></div>'+del+'</div>'+(p.text?'<div class="post-body"><p>'+sanitize(p.text)+'</p></div>':'')+media+'<div class="post-actions"><button class="post-action-btn'+(liked?' liked':'')+'" onclick="toggleLike(\''+p.id+'\','+liked+')"><i class="fa-'+(liked?'solid':'regular')+' fa-heart"></i> '+(p.likes?p.likes.length:0)+'</button><button class="post-action-btn" onclick="openComments(\''+p.id+'\')"><i class="fa-regular fa-comment"></i> Commenter</button><button class="post-action-btn" onclick="toggleFavPost(\''+p.id+'\')"><i class="fa-regular fa-bookmark"></i> Sauver</button></div></div>';
 }
 window.previewPostMedia=function(input){
   var prev=document.getElementById('post-media-preview');if(!prev)return;
@@ -359,14 +360,14 @@ window.openComments=async function(pid){
   for(var i=0;i<topLevel.length;i++){var c=topLevel[i];
     var av=c.userAvatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(c.userName)+'&background=0d6e4e&color=fff&size=32';
     var del=cu&&c.userId===cu.id?'<button class="comment-delete" onclick="deleteComment(\''+pid+'\',\''+c.id+'\')"><i class="fa-solid fa-trash"></i></button>':'';
-    cl.innerHTML+='<div class="comment-item"><img src="'+av+'"><div class="comment-item-body"><strong>'+c.userName+'</strong>'+del+'<p>'+c.text+'</p><small>'+timeAgo(c.createdAt)+'</small><br><button class="comment-reply-btn" onclick="setReplyTo(\''+c.id+'\',\''+c.userName.replace(/'/g,"\\'")+'\')"><i class="fa-solid fa-reply"></i> Répondre</button></div></div>';
+    cl.innerHTML+='<div class="comment-item"><img src="'+av+'"><div class="comment-item-body"><strong>'+sanitize(c.userName)+'</strong>'+del+'<p>'+sanitize(c.text)+'</p><small>'+timeAgo(c.createdAt)+'</small><br><button class="comment-reply-btn" onclick="setReplyTo(\''+c.id+'\',\''+sanitize(c.userName).replace(/'/g,"\\'")+'\')"><i class="fa-solid fa-reply"></i> Répondre</button></div></div>';
     var childReplies=replies.filter(function(r){return r.parentId===c.id;});
     if(childReplies.length>0){
       var repliesHtml='<div class="comment-replies">';
       for(var j=0;j<childReplies.length;j++){var r=childReplies[j];
         var rav=r.userAvatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(r.userName)+'&background=0d6e4e&color=fff&size=26';
         var rdel=cu&&r.userId===cu.id?'<button class="comment-delete" onclick="deleteComment(\''+pid+'\',\''+r.id+'\')"><i class="fa-solid fa-trash"></i></button>':'';
-        repliesHtml+='<div class="comment-item"><img src="'+rav+'"><div class="comment-item-body"><strong>'+r.userName+'</strong>'+rdel+'<p>'+r.text+'</p><small>'+timeAgo(r.createdAt)+'</small></div></div>';}
+        repliesHtml+='<div class="comment-item"><img src="'+rav+'"><div class="comment-item-body"><strong>'+sanitize(r.userName)+'</strong>'+rdel+'<p>'+sanitize(r.text)+'</p><small>'+timeAgo(r.createdAt)+'</small></div></div>';}
       repliesHtml+='</div>';cl.innerHTML+=repliesHtml;
     }
   }
@@ -409,10 +410,10 @@ window.viewUserProfile=async function(uid){
   var followBtn=isFollowing?'<button class="btn-outline-main" onclick="unfollowUser(\''+uid+'\');viewUserProfile(\''+uid+'\')"><i class="fa-solid fa-user-check"></i> Abonné</button>':'<button class="btn-main" onclick="followUser(\''+uid+'\');viewUserProfile(\''+uid+'\')"><i class="fa-solid fa-user-plus"></i> Suivre</button>';
   var msgBtn=cu.id!==uid?'<button class="btn-outline-main" onclick="startConversation(\''+uid+'\')"><i class="fa-solid fa-comment-dots"></i> Message</button>':'';
   var favBtn='<button class="btn-outline-main" onclick="toggleFavProfile(\''+uid+'\')"><i class="fa-regular fa-bookmark"></i> Sauver</button>';
-  c.innerHTML='<div class="profile-cover"><div class="profile-cover-gradient"></div><div class="profile-main-info"><div class="profile-avatar-wrap"><img src="'+av+'" class="profile-avatar"></div><h1>'+u.name+'</h1><p class="role-badge">'+(u.activeRole||u.role)+'</p><div class="profile-stats-row"><div class="prof-stat"><strong>'+(u.followers||[]).length+'</strong><span>Abonnés</span></div><div class="prof-stat"><strong>'+(u.following||[]).length+'</strong><span>Abonnements</span></div></div><div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">'+followBtn+msgBtn+favBtn+'</div></div></div>'
-    +(u.city?'<p class="text-center text-muted mt-1"><i class="fa-solid fa-location-dot"></i> '+u.city+'</p>':'')
+  c.innerHTML='<div class="profile-cover"><div class="profile-cover-gradient"></div><div class="profile-main-info"><div class="profile-avatar-wrap"><img src="'+av+'" class="profile-avatar"></div><h1>'+sanitize(u.name)+'</h1><p class="role-badge">'+(u.activeRole||u.role)+'</p><div class="profile-stats-row"><div class="prof-stat"><strong>'+(u.followers||[]).length+'</strong><span>Abonnés</span></div><div class="prof-stat"><strong>'+(u.following||[]).length+'</strong><span>Abonnements</span></div></div><div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">'+followBtn+msgBtn+favBtn+'</div></div></div>'
+    +(u.city?'<p class="text-center text-muted mt-1"><i class="fa-solid fa-location-dot"></i> '+sanitize(u.city)+'</p>':'')
     +(badges?'<div class="text-center mt-1">'+badges+'</div>':'')
-    +(u.bio?'<div class="profile-body mt-2"><h3>Présentation</h3><p style="white-space:pre-wrap;">'+u.bio+'</p></div>':'')
+    +(u.bio?'<div class="profile-body mt-2"><h3>Présentation</h3><p style="white-space:pre-wrap;">'+sanitize(u.bio)+'</p></div>':'')
     +'<div class="profile-posts-section mt-3"><h3><i class="fa-solid fa-newspaper"></i> Publications</h3><div id="user-posts-list"></div></div>';
   var posts=await fbGetUserPosts(uid);var upl=document.getElementById('user-posts-list');
   if(upl){if(posts.length===0)upl.innerHTML='<p class="empty-msg">Aucune publication.</p>';else{upl.innerHTML='';for(var i=0;i<posts.length;i++)upl.innerHTML+=renderPostCard(posts[i],cu);}}
@@ -537,7 +538,7 @@ async function loadFavorites(){
   if(window._favTab==='profiles'){
     for(var i=0;i<filtered.length;i++){var u=await fbGetUser(filtered[i].id);if(!u)continue;
       var av=u.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(u.name)+'&background=0d6e4e&color=fff&size=60';
-      fc.innerHTML+='<div class="suggest-card" onclick="viewUserProfile(\''+u.id+'\')"><img src="'+av+'"><h4>'+u.name+'</h4><p>'+(u.city||'')+'</p><button class="btn-sm" onclick="event.stopPropagation();fbRemoveFavorite(\''+cu.id+'\',\''+u.id+'\').then(loadFavorites)"><i class="fa-solid fa-trash"></i></button></div>';
+      fc.innerHTML+='<div class="suggest-card" onclick="viewUserProfile(\''+u.id+'\')"><img src="'+av+'"><h4>'+sanitize(u.name)+'</h4><p>'+sanitize(u.city||'')+'</p><button class="btn-sm" onclick="event.stopPropagation();fbRemoveFavorite(\''+cu.id+'\',\''+u.id+'\').then(loadFavorites)"><i class="fa-solid fa-trash"></i></button></div>';
     }
   }else{
     for(var i=0;i<filtered.length;i++){
@@ -548,7 +549,7 @@ async function loadFavorites(){
 }
 
 // ===== NOTIFICATIONS =====
-async function loadNotifications(){var cu=getSession();if(!cu)return;var nl=document.getElementById('notifications-list');if(!nl)return;nl.innerHTML='<p class="empty-msg">Chargement...</p>';var notifs=await fbGetNotifications(cu.id);if(notifs.length===0){nl.innerHTML='<p class="empty-msg">Aucune notification.</p>';return;}nl.innerHTML='';for(var i=0;i<notifs.length;i++){var n=notifs[i];nl.innerHTML+='<div class="notif-item'+(n.read?'':' unread')+'"><div class="notif-icon"><i class="fa-solid '+(n.icon||'fa-bell')+'"></i></div><div class="notif-content"><p>'+n.text+'</p><small>'+new Date(n.timestamp).toLocaleDateString('fr')+'</small></div></div>';}}
+async function loadNotifications(){var cu=getSession();if(!cu)return;var nl=document.getElementById('notifications-list');if(!nl)return;nl.innerHTML='<p class="empty-msg">Chargement...</p>';var notifs=await fbGetNotifications(cu.id);if(notifs.length===0){nl.innerHTML='<p class="empty-msg">Aucune notification.</p>';return;}nl.innerHTML='';for(var i=0;i<notifs.length;i++){var n=notifs[i];nl.innerHTML+='<div class="notif-item'+(n.read?'':' unread')+'"><div class="notif-icon"><i class="fa-solid '+(n.icon||'fa-bell')+'"></i></div><div class="notif-content"><p>'+sanitize(n.text)+'</p><small>'+new Date(n.timestamp).toLocaleDateString('fr')+'</small></div></div>';}}
 
 // ===== ADMIN =====
 window.loadAdminData=async function(){
@@ -562,7 +563,7 @@ window.loadAdminData=async function(){
     if(u.status!=='active')btns+='<button class="btn-success" style="margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'active\')">Activer</button>';
     if(u.status!=='blocked')btns+='<button class="btn-danger" style="margin:2px;" onclick="adminSetStatus(\''+u.id+'\',\'blocked\')">Bloquer</button>';
     btns+='<button class="btn-danger" style="margin:2px;opacity:.7;" onclick="adminDeleteUser(\''+u.id+'\')"><i class="fa-solid fa-trash"></i></button>';
-    tb.innerHTML+='<tr><td>'+u.name+'</td><td>'+(u.role||'')+'</td><td>'+u.phone+'</td><td>'+(u.city||'')+'</td><td>'+sb+'</td><td>'+btns+'</td></tr>';}
+    tb.innerHTML+='<tr><td>'+sanitize(u.name)+'</td><td>'+(u.role||'')+'</td><td>'+sanitize(u.phone)+'</td><td>'+sanitize(u.city||'')+'</td><td>'+sb+'</td><td>'+btns+'</td></tr>';}
 };
 window.adminSetStatus=async function(uid,s){await fbSetUser(uid,{status:s});await loadAdminData();};
 
