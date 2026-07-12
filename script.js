@@ -245,8 +245,8 @@ window.publishStory=async function(){var cu=getSession();if(!cu)return;var data=
 function loadCategories(){
   var cg=document.getElementById('categories-full');if(!cg)return;cg.innerHTML='';
   Object.keys(CATEGORIES).forEach(function(k){var c=CATEGORIES[k];
-    var discList=c.disciplines.map(function(d){return '<span class="badge" style="margin:2px;">'+d+'</span>';}).join('');
-    cg.innerHTML+='<div class="cat-card"><div onclick="filterByCategory(\''+k+'\')" style="cursor:pointer;"><i class="fa-solid '+c.icon+'" style="color:'+c.color+'"></i><h3>'+k+'</h3><span>'+c.disciplines.length+' disciplines</span></div><div class="cat-disc-toggle" style="margin-top:8px;"><button class="btn-sm btn-outline-main" onclick="event.stopPropagation();this.nextElementSibling.classList.toggle(\'hidden\');this.textContent=this.nextElementSibling.classList.contains(\'hidden\')?\' Voir disciplines\':\' Masquer\'">Voir disciplines</button><div class="hidden" style="margin-top:8px;">'+discList+'</div></div></div>';
+    var discList=c.disciplines.map(function(d){return '<span class="badge">'+d+'</span>';}).join('');
+    cg.innerHTML+='<div class="cat-card"><div onclick="filterByCategory(\''+k+'\')" style="cursor:pointer;"><i class="fa-solid '+c.icon+'" style="color:'+c.color+'"></i><h3>'+k+'</h3><span>'+c.disciplines.length+' disciplines</span></div><div class="cat-disc-toggle"><button class="btn-sm btn-outline-main" onclick="event.stopPropagation();var dl=this.parentElement.querySelector(\'.cat-disc-list\');dl.classList.toggle(\'hidden\');this.textContent=dl.classList.contains(\'hidden\')?\' Voir disciplines\':\' Masquer\'"> Voir disciplines</button><div class="cat-disc-list hidden">'+discList+'</div></div></div>';
   });
 }
 window.filterByCategory=function(cat){goToView('teachers');setTimeout(function(){var sel=document.getElementById('t-category');if(sel){sel.value=cat;updateDisciplineFilter();renderTeachers();}},100);};

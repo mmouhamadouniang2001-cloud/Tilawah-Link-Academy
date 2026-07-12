@@ -709,16 +709,25 @@ textarea:focus{
 
 /* ===== CATEGORIES GRID ===== */
 .categories-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;}
-.categories-full-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;}
+.categories-full-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:20px;
+  align-items:start;
+}
 
 .cat-card{
   background:rgba(255,255,255,.80);
   backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
-  border-radius:var(--radius);padding:24px 16px;text-align:center;
+  border-radius:var(--radius);
+  padding:24px 20px;
+  text-align:center;
   box-shadow:var(--shadow-sm);
   border:1px solid rgba(26,188,156,.06);
-  cursor:pointer;transition:var(--transition);
+  cursor:pointer;
+  transition:var(--transition);
+  overflow:hidden;
 }
 .cat-card:hover{
   transform:translateY(-5px) scale(1.02);
@@ -727,8 +736,25 @@ textarea:focus{
 }
 .cat-card i{font-size:2rem;color:var(--turquoise);margin-bottom:10px;display:block;transition:var(--transition);}
 .cat-card:hover i{transform:scale(1.15);text-shadow:0 0 15px rgba(26,188,156,.40);}
-.cat-card h3{font-size:.9rem;font-weight:600;}
+.cat-card h3{font-size:.95rem;font-weight:700;margin-bottom:4px;}
 .cat-card span{font-size:.78rem;color:var(--text-muted);}
+
+.cat-disc-toggle{text-align:center;margin-top:12px;}
+.cat-disc-toggle .btn-sm{font-size:.8rem;padding:6px 16px;}
+.cat-disc-list{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:6px;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid rgba(26,188,156,.10);
+}
+.cat-disc-list .badge{
+  font-size:.75rem;
+  padding:5px 12px;
+  white-space:nowrap;
+}
 
 /* ===== TEACHERS GRID ===== */
 .teachers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
@@ -1459,7 +1485,7 @@ textarea:focus{
 .msg-bubble:hover .msg-delete-btn{opacity:1;}
 .msg-bubble.received .msg-delete-btn{color:rgba(0,0,0,.3);}
 .msg-delete-btn:hover{color:var(--danger)!important;opacity:1;}
-.cat-disc-toggle{text-align:center;}
+
 
 /* ===== CATEGORY ACCORDION ===== */
 .cat-accordion-item{
