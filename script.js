@@ -440,8 +440,8 @@ async function renderConvList(convs){
 }
 async function openConversation(convId,otherUser){
   currentConvId=convId;var cu=getSession();var ca=document.getElementById('chat-area');if(!ca)return;
-  // Hide sidebar on mobile
-  var sidebar=document.getElementById('conv-sidebar');if(sidebar)sidebar.classList.add('conv-sidebar-hidden');
+  // Hide sidebar on mobile only (desktop keeps split-view)
+  var sidebar=document.getElementById('conv-sidebar');if(sidebar&&window.innerWidth<=992)sidebar.classList.add('conv-sidebar-hidden');
   var av=otherUser.avatar||'https://ui-avatars.com/api/?name='+encodeURIComponent(otherUser.name)+'&background=0d6e4e&color=fff&size=40';
   ca.innerHTML='<div class="chat-header"><button class="chat-back-btn" onclick="closeChatGoBack()"><i class="fa-solid fa-arrow-left"></i></button><img src="'+av+'" onclick="viewUserProfile(\''+otherUser.id+'\')"><div><strong>'+otherUser.name+'</strong><br><small>'+(otherUser.city||'')+'</small></div></div><div class="chat-messages" id="chat-messages"></div><div class="chat-attachments"><label class="chat-attach-btn" title="Photo"><i class="fa-solid fa-image"></i><input type="file" accept="image/*" class="hidden" onchange="sendFileMsg(this,\'image\')"></label><label class="chat-attach-btn" title="Vidéo"><i class="fa-solid fa-video"></i><input type="file" accept="video/*" class="hidden" onchange="sendFileMsg(this,\'video\')"></label><label class="chat-attach-btn" title="Document"><i class="fa-solid fa-paperclip"></i><input type="file" class="hidden" onchange="sendFileMsg(this,\'file\')"></label><button class="chat-attach-btn" title="Audio" onclick="recordVoice()"><i class="fa-solid fa-microphone"></i></button></div><div class="chat-input"><input type="text" id="msg-input" placeholder="Votre message..." onkeyup="if(event.key===\'Enter\')sendMessage()"><button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button></div>';
   await fbMarkAsRead(convId,cu.id);if(msgListener)msgListener();
