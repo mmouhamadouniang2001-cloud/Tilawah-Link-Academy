@@ -460,6 +460,68 @@ select option{background:var(--bg-alt);color:var(--text);}
 .voice-player .vp-speed:hover{background:rgba(255,255,255,.1);}
 .msg-bubble.received .voice-player .vp-speed{border-color:rgba(26,188,156,.15);}
 .msg-bubble.received .voice-player .vp-speed:hover{background:rgba(26,188,156,.06);}
+
+/* Voice Recording Overlay Bar */
+.voice-recording-bar{
+  position:absolute;bottom:0;left:0;right:0;z-index:10;
+  display:flex;align-items:center;gap:12px;
+  padding:14px 24px;
+  background:linear-gradient(135deg,rgba(220,38,38,.12),rgba(180,30,30,.18));
+  backdrop-filter:blur(16px);
+  border-top:1px solid rgba(220,38,38,.25);
+  animation:vrb-slideUp .25s ease-out;
+}
+@keyframes vrb-slideUp{
+  from{transform:translateY(100%);opacity:0;}
+  to{transform:translateY(0);opacity:1;}
+}
+.vrb-pulse{
+  width:12px;height:12px;border-radius:50%;
+  background:#ef4444;
+  box-shadow:0 0 8px rgba(239,68,68,.6);
+  animation:vrb-blink 1s ease-in-out infinite;
+}
+@keyframes vrb-blink{
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:.4;transform:scale(.85);}
+}
+.vrb-label{
+  font-size:.85rem;font-weight:600;color:#fca5a5;
+  letter-spacing:.3px;
+}
+.vrb-timer{
+  font-size:.9rem;font-weight:700;color:#fff;
+  font-variant-numeric:tabular-nums;
+  min-width:40px;
+}
+.vrb-stop{
+  margin-left:auto;
+  display:flex;align-items:center;gap:6px;
+  padding:8px 18px;border-radius:20px;border:none;
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+  color:#fff;font-size:.82rem;font-weight:600;
+  cursor:pointer;transition:all .2s ease;
+  box-shadow:0 2px 10px rgba(239,68,68,.3);
+}
+.vrb-stop:hover{
+  background:linear-gradient(135deg,#f87171,#ef4444);
+  transform:scale(1.04);
+  box-shadow:0 4px 16px rgba(239,68,68,.45);
+}
+.vrb-stop i{font-size:.75rem;}
+
+/* Mic button recording state */
+.chat-attach-btn.recording{
+  background:rgba(239,68,68,.2)!important;
+  color:#ef4444!important;
+  border-color:#ef4444!important;
+  animation:mic-pulse 1.2s ease-in-out infinite;
+  box-shadow:0 0 12px rgba(239,68,68,.3);
+}
+@keyframes mic-pulse{
+  0%,100%{box-shadow:0 0 8px rgba(239,68,68,.3);}
+  50%{box-shadow:0 0 20px rgba(239,68,68,.5);}
+}
 .empty-msg{text-align:center;color:var(--text-muted);padding:30px;font-size:.9rem;}
 
 

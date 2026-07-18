@@ -469,15 +469,38 @@ window.recordVoice=function(){
     window._recording=true;window._audioChunks=[];
     var mr=new MediaRecorder(stream);window._mediaRecorder=mr;
     mr.ondataavailable=function(e){window._audioChunks.push(e.data);};
+    // Show recording overlay bar
+    var chatArea=document.querySelector('.chat-area');
+    var overlay=document.createElement('div');
+    overlay.className='voice-recording-bar';
+    overlay.innerHTML='<div class="vrb-pulse"></div><span class="vrb-label">Enregistrement...</span><span class="vrb-timer">0:00</span><button class="vrb-stop" onclick="recordVoice()"><i class="fa-solid fa-stop"></i> Envoyer</button>';
+    chatArea.appendChild(overlay);
+    window._recordingOverlay=overlay;
+    // Start timer
+    var startTime=Date.now();
+    window._recordingTimer=setInterval(function(){
+      var elapsed=Math.floor((Date.now()-startTime)/1000);
+      var m=Math.floor(elapsed/60);var s=elapsed%60;
+      var timerEl=overlay.querySelector('.vrb-timer');
+      if(timerEl)timerEl.textContent=m+':'+(s<10?'0':'')+s;
+    },1000);
+    // Add recording class to mic button for visual feedback
+    var micBtn=chatArea.querySelector('.chat-attach-btn[title="Audio"]');
+    if(micBtn)micBtn.classList.add('recording');
     mr.onstop=async function(){
       window._recording=false;stream.getTracks().forEach(function(t){t.stop();});
+      // Remove overlay and timer
+      if(window._recordingTimer){clearInterval(window._recordingTimer);window._recordingTimer=null;}
+      if(window._recordingOverlay){window._recordingOverlay.remove();window._recordingOverlay=null;}
+      var micBtn2=document.querySelector('.chat-attach-btn[title="Audio"]');
+      if(micBtn2)micBtn2.classList.remove('recording');
       var blob=new Blob(window._audioChunks,{type:'audio/webm'});var cu=getSession();if(!cu||!currentConvId)return;
       var mid='voice_'+Date.now();var url=await fbUploadFile(mid,blob);
       var doc=await db.collection('conversations').doc(currentConvId).get();if(!doc.exists)return;
       var conv=doc.data();var rid=conv.participants[0]===cu.id?conv.participants[1]:conv.participants[0];
       await fbSendMessage(currentConvId,{senderId:cu.id,recipientId:rid,timestamp:new Date().toISOString(),type:'voice',fileUrl:url,text:'🎤 Message vocal'});
     };
-    mr.start();alert('🔴 Enregistrement en cours... Cliquez à nouveau sur le micro pour arrêter.');
+    mr.start();
   }).catch(function(e){alert('Impossible d\'accéder au micro: '+e.message);});
 };
 window.deleteMsg=async function(convId,msgId){if(!confirm('Supprimer ce message ?'))return;await db.collection('conversations').doc(convId).collection('messages').doc(msgId).delete();};
